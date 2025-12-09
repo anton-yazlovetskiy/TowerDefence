@@ -73,7 +73,12 @@ class Enemy {
     constructor(wave, type = 'normal') {
         this.type = type; this.pathIndex = 0; this.progress = 0; this.alive = true;
         let hpMult = 1; if (type === 'tank') hpMult = 5.0; else if (type === 'shooter') hpMult = 1.2;
-        this.hp = (20 + (wave * 12)) * hpMult * STATE.diffMultiplier; this.maxHp = this.hp;
+        
+        // NEW FORMULA: Multiply by (Diff * 10). Example: x1 -> x10 HP.
+        const diffFactor = STATE.diffMultiplier * 10;
+        this.hp = (20 + (wave * 12)) * hpMult * diffFactor; 
+        this.maxHp = this.hp;
+        
         this.baseSpeed = 0.03 + (wave * 0.003); this.attackCooldown = 0; this.attackRange = 3.5; this.attackDmg = 5 + wave;
         
         if (STATE.path && STATE.path.length > 0) {
@@ -433,14 +438,24 @@ function update() {
 }
 
 function handleResize() {
-    const headerH = 60; 
-    const shopH = (window.innerWidth <= 768) ? 130 : 0; 
-    const shopW = (window.innerWidth > 768) ? 240 : 0;
-    const availW = window.innerWidth - shopW - 40; 
-    const availH = window.innerHeight - headerH - shopH - 40;
+    // Measure current header and shop height
+    const headerEl = document.querySelector('.ui-header');
+    const shopEl = document.querySelector('.ui-shop');
+    
+    // Fallback defaults just in case
+    let headerH = headerEl ? headerEl.offsetHeight : 60;
+    let shopH = shopEl ? shopEl.offsetHeight : 0;
+    
+    if (window.innerWidth > 768) {
+        shopH = 0; 
+    }
+
+    const availW = window.innerWidth - (window.innerWidth > 768 ? 240 : 0) - 20; 
+    const availH = window.innerHeight - headerH - shopH - 20;
     
     if (CONFIG.cols <= 0 || CONFIG.rows <= 0) return;
 
+    // Calculate max possible cell size that fits in both width and height
     const size = Math.floor(Math.min(availW / CONFIG.cols, availH / CONFIG.rows));
     
     if (size > 0 && canvas) { 
@@ -518,7 +533,6 @@ function updateUI() {
     updateShopAffordability();
 }
 
-// NEW FUNCTION: Check affordability
 function updateShopAffordability() {
     document.querySelectorAll('.tower-card').forEach(card => {
         const cost = parseInt(card.dataset.cost);
@@ -542,7 +556,6 @@ function endGame() {
     t.classList.remove('hidden'); t.style.display='block';
 }
 
-// RESTORED FULL TUTORIAL CLASS
 class Tutorial {
     constructor() {
         this.overlay = document.getElementById('tutorial-overlay');

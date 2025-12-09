@@ -24,6 +24,7 @@ body.theme-light {
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
 body { background-color: var(--bg-color); color: var(--text-color); font-family: var(--font-main); overflow: hidden; height: 100vh; width: 100vw; }
 
+/* === DESKTOP LAYOUT === */
 .game-wrapper {
     display: grid; height: 100%;
     grid-template-rows: 60px 1fr;
@@ -35,15 +36,12 @@ body { background-color: var(--bg-color); color: var(--text-color); font-family:
 .ui-header {
     grid-area: header; background: var(--panel-bg); border-bottom: var(--ui-border);
     padding: 0 10px; font-size: 14px; font-weight: 600; z-index: 20;
-    overflow-x: auto; overflow-y: hidden;
-    -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+    overflow: hidden;
 }
 
 .header-content {
     display: flex; align-items: center; justify-content: space-between;
-    width: 100%; height: 100%;
-    min-width: max-content; 
-    gap: 12px; padding-right: 20px;
+    width: 100%; height: 100%; gap: 12px; padding-right: 20px;
 }
 
 .stat-group, .btn-modern, .toggle-wrapper, .control-group { flex: 0 0 auto !important; }
@@ -53,7 +51,7 @@ body { background-color: var(--bg-color); color: var(--text-color); font-family:
 .icon-heart { color: #f43f5e; } .icon-cup { color: #f59e0b; }
 .spacer { margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; height: 24px; display: flex; align-items: center;}
 
-/* CONTROLS (HP Counter) */
+/* CONTROLS */
 .control-group { display: flex; align-items: center; gap: 4px; }
 .ctrl-label { font-size: 10px; color: var(--accent-color); font-weight: 800; margin-right: 2px; }
 .val-display { font-family: monospace; font-size: 14px; color: #2ecc71; min-width: 25px; text-align: center; }
@@ -97,7 +95,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 /* BOARD */
 .game-board-container {
     grid-area: board; background: var(--board-bg);
-    display: flex; justify-content: center; align-items: center; padding: 15px; overflow: hidden;
+    display: flex; justify-content: center; align-items: center; padding: 10px; overflow: hidden;
     position: relative; 
 }
 canvas {
@@ -105,7 +103,7 @@ canvas {
     border: 3px solid var(--wall-color); background: var(--path-color); border-radius: 8px;
 }
 
-/* SHOP */
+/* SHOP (General) */
 .ui-shop {
     grid-area: shop; background: var(--panel-bg); border-left: var(--ui-border);
     display: flex; flex-direction: column; overflow: hidden; z-index: 20; 
@@ -128,23 +126,34 @@ canvas {
     grid-column: span 3; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
     color: var(--accent-color); text-align: center; margin-bottom: 2px; font-weight: 800;
 }
+
+/* --- TOWER CARD & COST (UPDATED) --- */
 .tower-card {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    cursor: grab; padding: 4px; border-radius: 4px; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; cursor: grab; padding: 4px; border-radius: 4px; transition: all 0.2s;
     width: 50px; flex: 0 0 auto !important;
+    position: relative; /* For absolute cost */
 }
 .tower-card:hover { background: rgba(255,255,255,0.1); }
 .tower-card:active { transform: scale(0.95); cursor: grabbing; }
 
-/* NEW: Affordability State */
-.tower-card.cannot-afford {
-    opacity: 0.4;
-    filter: grayscale(1);
-    cursor: not-allowed;
+/* COST BADGE STYLE */
+.tower-cost { 
+    position: absolute; 
+    top: 0; right: 0;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    font-size: 9px; font-weight: 700; 
+    padding: 2px 4px;
+    border-radius: 0 4px 0 4px; /* Rounded corner matching card */
+    z-index: 5;
+    white-space: nowrap;
 }
 
 .tower-preview { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-.tower-cost { font-size: 10px; font-weight: 700; color: #a1a1aa; white-space: nowrap; }
+
+/* AFFORDABILITY */
+.tower-card.cannot-afford { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
 .ui-shop.drag-over-delete::after {
     content: "SELL"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     color: #f43f5e; font-weight: bold; background: var(--panel-bg);
@@ -193,42 +202,58 @@ canvas {
     border-radius: 8px;
     transition: all 0.3s;
 }
-/* Specific highlight for start button container to align nicely */
-#start-btn-container.tutorial-highlight {
-    padding: 4px;
-    margin: -4px;
-}
+#start-btn-container.tutorial-highlight { padding: 4px; margin: -4px; }
 
+/* =========================================
+   MOBILE LAYOUT (GRID FIX)
+   ========================================= */
 @media (max-width: 768px) {
     .game-wrapper {
-        grid-template-rows: 50px 1fr 110px;
+        grid-template-rows: auto 1fr auto; 
         grid-template-columns: 1fr;
         grid-template-areas: "header" "board" "shop";
     }
-    .ui-header { padding: 0 8px; }
-    .spacer { margin-right: 10px; padding-right: 10px; }
-    .ui-shop { flex-direction: row; }
-    .shop-header { width: 80px; border-bottom: none; border-right: var(--ui-border); padding: 5px; flex-shrink: 0;}
-    .money-value { font-size: 16px; }
-    .shop-scroll-area { 
-        overflow-x: auto; overflow-y: hidden; padding: 5px 10px; 
-        display: flex; align-items: center; width: 100%;
-    }
-    .shop-grid { flex-direction: row; gap: 12px; width: max-content; }
-    .tower-group { 
-        display: flex; width: max-content; gap: 8px; padding: 6px; 
-        height: 80px; align-items: center; 
-        grid-template-columns: none;
-    }
-    .group-label { display: none; } 
-    .tower-card { width: 55px; } 
-}
 
-/* VERY SMALL SCREENS FIX */
-@media (max-width: 380px) {
-    .header-content { gap: 6px; padding-right: 5px; }
-    .spacer { margin-right: 6px; padding-right: 6px; }
-    .btn-modern { padding: 6px 8px; font-size: 12px; }
-    /* Hide theme toggle on super small screens to save space */
-    #theme-toggle { display: none; }
+    .ui-header { padding: 5px 8px; overflow: visible; }
+    .header-content {
+        flex-wrap: wrap; justify-content: space-evenly; 
+        gap: 8px; padding-right: 0; height: auto;
+    }
+    .spacer { border: none; margin: 0; padding: 0; }
+    .btn-modern { padding: 8px 12px; font-size: 13px; }
+
+    /* SHOP */
+    .ui-shop { 
+        height: auto; max-height: 40vh;
+        border-left: none; border-top: var(--ui-border);
+    }
+    
+    .shop-header { 
+        width: 100%; height: 32px; 
+        border-bottom: var(--ui-border); 
+        flex-direction: row; justify-content: center; gap: 10px; padding: 0;
+    }
+    
+    .shop-scroll-area { padding: 6px; overflow: visible; }
+
+    /* GRID LAYOUT */
+    .shop-grid { 
+        display: grid;
+        grid-template-columns: 1fr 1fr; 
+        gap: 6px; width: 100%;
+    }
+    
+    .tower-group { 
+        display: flex; justify-content: space-evenly; align-items: center;
+        gap: 2px; padding: 6px; height: auto; 
+        grid-template-columns: none; 
+    }
+    
+    .group-label { display: none; } 
+    
+    /* Slightly smaller cards for safety */
+    .tower-card { width: 44px; padding: 4px; height: 44px; } 
+    .tower-preview { width: 100%; height: 100%; } 
+    /* Force cost to be very small on mobile if needed, though absolute helps */
+    .tower-cost { font-size: 8px; padding: 1px 3px; }
 }
