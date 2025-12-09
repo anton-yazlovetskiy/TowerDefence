@@ -74,22 +74,28 @@ class Enemy {
         this.type = type; this.pathIndex = 0; this.progress = 0; this.alive = true;
         let hpMult = 1; if (type === 'tank') hpMult = 5.0; else if (type === 'shooter') hpMult = 1.2;
         
-        // NEW FORMULA: Multiply by (Diff * 10). Example: x1 -> x10 HP.
         const diffFactor = STATE.diffMultiplier * 10;
         this.hp = (20 + (wave * 12)) * hpMult * diffFactor; 
         this.maxHp = this.hp;
         
-        this.baseSpeed = 0.03 + (wave * 0.003); this.attackCooldown = 0; this.attackRange = 3.5; this.attackDmg = 5 + wave;
+        this.baseSpeed = 0.03 + (wave * 0.003); 
+        this.attackCooldown = 0; this.attackRange = 3.5; this.attackDmg = 5 + wave;
         
+        // Таймер замедления от получения урона (инициализация)
+        this.hitSlowTimer = 0; 
+
         if (STATE.path && STATE.path.length > 0) {
             const p = STATE.path[0]; this.x = p.x; this.y = p.y;
         } else {
             this.x = 0; this.y = 0; this.alive = false; 
         }
     }
+
     update() {
         if (!this.alive) return;
         let currentSpeed = this.baseSpeed;
+        
+        // 1. Замедление от Ледяных башен
         let slowFactor = 1.0;
         STATE.towers.forEach(t => {
             if (t.stats.slow > 0) {
@@ -98,6 +104,13 @@ class Enemy {
             }
         });
         currentSpeed *= slowFactor;
+
+        // 2. Замедление от получения урона (Impulse slow)
+        if (this.hitSlowTimer > 0) {
+            currentSpeed *= 0.6; // <--- НАСТРОЙКА: Сила замедления (0.9 = 90% скорости, то есть тормозим на 10%)
+            this.hitSlowTimer--;
+        }
+
         if (this.type === 'shooter') {
             if (this.attackCooldown > 0) this.attackCooldown--;
             const target = this.findTargetTower();
@@ -116,6 +129,7 @@ class Enemy {
             this.x = p.x + (next.x - p.x) * this.progress; this.y = p.y + (next.y - p.y) * this.progress;
         }
     }
+
     findTargetTower() {
         for (const t of STATE.towers) {
             const dist = Math.sqrt((t.x - this.x)**2 + (t.y - this.y)**2);
@@ -123,14 +137,20 @@ class Enemy {
         }
         return null;
     }
+
     teleportLoop() {
         STATE.lives--; updateUI();
         if (STATE.lives <= 0) { this.alive = false; endGame(); return; }
         this.pathIndex = 0; this.progress = 0;
         const p = STATE.path[0]; this.x = p.x; this.y = p.y;
     }
+
     takeDamage(amt) {
         this.hp -= amt;
+        
+        // При получении урона ставим таймер замедления
+        this.hitSlowTimer = 70; // <--- НАСТРОЙКА: Длительность в кадрах (60 кадров = 1 секунда, 45 = ~0.75 сек)
+
         if (this.hp <= 0) {
             this.alive = false; this.spawnParticles();
             let money = 15;
@@ -139,10 +159,12 @@ class Enemy {
             STATE.money += money; updateUI(); checkWin();
         }
     }
+
     spawnParticles() {
         const color = (this.type === 'tank') ? PALETTE.tank : (this.type === 'shooter' ? PALETTE.shooter : PALETTE.normal);
         for(let i=0; i<6; i++) STATE.particles.push(new Particle(this.x, this.y, color));
     }
+
     drawIcon(ctx, cs, cx, cy, radius) {
         ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 2; ctx.beginPath();
         if (this.type === 'tank') {
