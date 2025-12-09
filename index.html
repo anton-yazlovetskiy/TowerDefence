@@ -4,22 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maze Defence</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body class="theme-dark">
     <div class="game-wrapper">
         <header class="ui-header">
             <div class="header-content">
                 <div class="stat-group"><span class="stat-icon icon-heart">♥</span><span id="stat-lives">100</span></div>
-                <div class="stat-group spacer"><span class="stat-icon icon-cup">🏆</span><span id="stat-vp">0</span>/100</div>
+                <div class="stat-group spacer"><span class="stat-icon icon-cup">🏆</span><span id="stat-vp">0</span>/1k</div>
 
-                <select id="difficulty-select" class="modern-select">
-                    <option value="easy">Easy</option>
-                    <option value="normal" selected>Norm</option>
-                    <option value="hard">Hard</option>
-                </select>
+                <div class="control-group spacer">
+                    <span class="ctrl-label">HP:</span>
+                    <button id="diff-minus" class="btn-tiny">-</button>
+                    <span id="diff-val" class="val-display">x1</span>
+                    <button id="diff-plus" class="btn-tiny">+</button>
+                </div>
+
+                <button id="btn-grid-size" class="btn-modern spacer">Map: 12x13</button>
                 
                 <div class="toggle-wrapper">
+                    <span class="toggle-label">AUTO</span>
                     <label class="switch">
                         <input type="checkbox" id="chk-autostart">
                         <span class="slider round"></span>
@@ -27,12 +31,14 @@
                 </div>
 
                 <button id="btn-pause" class="btn-modern btn-icon">⏸</button>
-                <button id="btn-start" class="btn-modern btn-accent">Start!</button>
+                <div id="start-btn-container">
+                     <button id="btn-start" class="btn-modern btn-accent">Start!</button>
+                </div>
                 <button id="theme-toggle" class="btn-modern btn-icon">☀</button>
             </div>
         </header>
 
-        <main class="game-board-container">
+        <main class="game-board-container" id="board-container">
             <canvas id="gameCanvas"></canvas>
             
             <div id="toast" class="toast hidden">
@@ -42,7 +48,7 @@
             </div>
         </main>
 
-        <aside class="ui-shop">
+        <aside class="ui-shop" id="shop-container">
             <div class="shop-header">
                 <span class="money-label">FUNDS</span>
                 <span class="money-value">$<span id="stat-money">450</span></span>
@@ -105,6 +111,15 @@
             </div>
         </aside>
     </div>
+
+    <div id="tutorial-overlay" class="hidden"></div>
+    <div id="tutorial-msg-box" class="tutorial-msg hidden">
+        <button class="tutorial-close" id="tutorial-skip-btn">×</button>
+        <h3 id="tut-title">Welcome!</h3>
+        <p id="tut-text">Let's learn the basics.</p>
+        <button id="tutorial-next-btn" class="btn-modern btn-accent">Next</button>
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>
