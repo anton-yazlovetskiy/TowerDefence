@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maze Defence</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+    <div class="game-wrapper">
+        <header class="ui-header">
+            <div class="header-content">
+                <div class="stat-group"><span class="stat-icon icon-heart">♥</span><span id="stat-lives">100</span></div>
+                <div class="stat-group spacer"><span class="stat-icon icon-cup">🏆</span><span id="stat-vp">0</span>/100</div>
+
+                <select id="difficulty-select" class="modern-select">
+                    <option value="easy">Easy</option>
+                    <option value="normal" selected>Norm</option>
+                    <option value="hard">Hard</option>
+                </select>
+                
+                <div class="toggle-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="chk-autostart">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <button id="btn-pause" class="btn-modern btn-icon">⏸</button>
+                <button id="btn-start" class="btn-modern btn-accent">Start!</button>
+                <button id="theme-toggle" class="btn-modern btn-icon">☀</button>
+            </div>
+        </header>
+
+        <main class="game-board-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="toast" class="toast hidden">
+                <h2 id="toast-title">Game Over</h2>
+                <p id="toast-message">Result</p>
+                <button id="restart-btn" class="btn-modern btn-accent">Restart</button>
+            </div>
+        </main>
+
+        <aside class="ui-shop">
+            <div class="shop-header">
+                <span class="money-label">FUNDS</span>
+                <span class="money-value">$<span id="stat-money">450</span></span>
+            </div>
+
+            <div class="shop-scroll-area">
+                <div class="shop-grid">
+                    <div class="tower-group">
+                        <div class="group-label">PULEMET</div>
+                        <div class="tower-card" draggable="true" data-type="radar1" data-cost="50">
+                            <div class="tower-preview" id="preview-radar1"></div><span class="tower-cost">50$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="radar2" data-cost="150">
+                            <div class="tower-preview" id="preview-radar2"></div><span class="tower-cost">150$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="radar3" data-cost="400">
+                            <div class="tower-preview" id="preview-radar3"></div><span class="tower-cost">400$</span>
+                        </div>
+                    </div>
+
+                    <div class="tower-group">
+                        <div class="group-label">CANNON</div>
+                        <div class="tower-card" draggable="true" data-type="blaster1" data-cost="100">
+                            <div class="tower-preview" id="preview-blaster1"></div><span class="tower-cost">100$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="blaster2" data-cost="300">
+                            <div class="tower-preview" id="preview-blaster2"></div><span class="tower-cost">300$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="blaster3" data-cost="700">
+                            <div class="tower-preview" id="preview-blaster3"></div><span class="tower-cost">700$</span>
+                        </div>
+                    </div>
+
+                    <div class="tower-group">
+                        <div class="group-label">SNIPER</div>
+                        <div class="tower-card" draggable="true" data-type="sniper1" data-cost="150">
+                            <div class="tower-preview" id="preview-sniper1"></div><span class="tower-cost">150$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="sniper2" data-cost="450">
+                            <div class="tower-preview" id="preview-sniper2"></div><span class="tower-cost">450$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="sniper3" data-cost="1000">
+                            <div class="tower-preview" id="preview-sniper3"></div><span class="tower-cost">1k$</span>
+                        </div>
+                    </div>
+
+                     <div class="tower-group">
+                        <div class="group-label">ICE</div>
+                        <div class="tower-card" draggable="true" data-type="slow1" data-cost="100">
+                            <div class="tower-preview" id="preview-slow1"></div><span class="tower-cost">100$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="slow2" data-cost="250">
+                            <div class="tower-preview" id="preview-slow2"></div><span class="tower-cost">250$</span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="slow3" data-cost="600">
+                            <div class="tower-preview" id="preview-slow3"></div><span class="tower-cost">600$</span>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

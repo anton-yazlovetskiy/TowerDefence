@@ -1,0 +1,189 @@
+:root {
+    --bg-color: #18181b;
+    --board-bg: #27272a;
+    --panel-bg: #202023;
+    --text-color: #f4f4f5;
+    --accent-color: #8b5cf6;
+    --accent-hover: #7c3aed;
+    
+    --wall-color: #3f3f46;
+    --path-color: #18181b;
+    
+    --ui-border: 1px solid rgba(255,255,255,0.1);
+    --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body.theme-light {
+    --bg-color: #f4f4f5;
+    --board-bg: #e4e4e7;
+    --panel-bg: #ffffff;
+    --text-color: #27272a;
+    --wall-color: #a1a1aa;
+    --path-color: #ffffff;
+    --ui-border: 1px solid rgba(0,0,0,0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+body { background-color: var(--bg-color); color: var(--text-color); font-family: var(--font-main); overflow: hidden; height: 100vh; width: 100vw; }
+
+.game-wrapper {
+    display: grid; height: 100%;
+    grid-template-rows: 60px 1fr;
+    grid-template-columns: 1fr 240px;
+    grid-template-areas: "header header" "board shop";
+}
+
+/* HEADER */
+.ui-header {
+    grid-area: header; background: var(--panel-bg); border-bottom: var(--ui-border);
+    padding: 0 10px; font-size: 14px; font-weight: 600; z-index: 10;
+    overflow-x: auto; /* Позволяет скроллить если совсем узко */
+    white-space: nowrap; /* Чтобы не переносилось */
+}
+
+/* Flex container for header items */
+.header-content {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; height: 100%; min-width: 320px; /* Min width to prevent crush */
+    gap: 8px;
+}
+
+.stat-group { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+.stat-icon { font-size: 16px; }
+.icon-heart { color: #f43f5e; } .icon-cup { color: #f59e0b; }
+
+/* SPACING FIX: Отступ между VP и Сложностью */
+.spacer { margin-right: 20px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; height: 30px;}
+
+/* CONTROLS */
+.btn-modern {
+    border: none; border-radius: 6px; padding: 6px 12px;
+    font-family: inherit; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.1); color: var(--text-color);
+}
+.btn-modern:hover { background: rgba(255,255,255,0.2); }
+.btn-modern:active { transform: translateY(1px); }
+.btn-modern:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-accent {
+    background: var(--accent-color); color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon { padding: 6px 10px; font-size: 16px; }
+
+.modern-select {
+    padding: 4px 8px; border-radius: 6px; border: var(--ui-border);
+    background: rgba(0,0,0,0.2); color: var(--text-color);
+    font-family: inherit; cursor: pointer; font-size: 12px;
+}
+
+/* TOGGLE SWITCH */
+.toggle-wrapper { display: flex; align-items: center; }
+.switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #52525b; transition: .4s; border-radius: 18px;
+}
+.slider:before {
+    position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
+    background-color: white; transition: .4s; border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(16px); }
+
+
+/* BOARD */
+.game-board-container {
+    grid-area: board; background: var(--board-bg);
+    display: flex; justify-content: center; align-items: center; padding: 15px; overflow: hidden;
+}
+canvas {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    border: 3px solid var(--wall-color); background: var(--path-color); border-radius: 8px;
+}
+
+/* SHOP */
+.ui-shop {
+    grid-area: shop; background: var(--panel-bg); border-left: var(--ui-border);
+    display: flex; flex-direction: column; overflow: hidden; z-index: 10;
+}
+
+.shop-header {
+    flex: 0 0 auto;
+    background: rgba(0,0,0,0.15); padding: 10px; border-bottom: var(--ui-border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.money-label { font-size: 9px; opacity: 0.6; letter-spacing: 1px; font-weight: bold; }
+.money-value { font-size: 20px; font-weight: 800; color: #2ecc71; font-family: monospace; }
+
+.shop-scroll-area {
+    flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px;
+}
+
+.shop-grid { display: flex; flex-direction: column; gap: 10px; }
+
+.tower-group {
+    background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border: var(--ui-border);
+}
+.group-label {
+    grid-column: span 3; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--accent-color); text-align: center; margin-bottom: 2px; font-weight: 800;
+}
+
+.tower-card {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    cursor: grab; padding: 3px; border-radius: 4px; transition: all 0.2s;
+}
+.tower-card:hover { background: rgba(255,255,255,0.1); }
+.tower-card:active { transform: scale(0.95); cursor: grabbing; }
+
+.tower-preview { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; }
+.tower-cost { font-size: 10px; font-weight: 700; color: #a1a1aa; }
+
+.ui-shop.drag-over-delete::after {
+    content: "SELL"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #f43f5e; font-weight: bold; background: var(--panel-bg);
+    padding: 12px 24px; border-radius: 8px; pointer-events: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.toast {
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--panel-bg); padding: 15px 30px; border-radius: 12px;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); text-align: center; z-index: 100;
+}
+.toast.hidden { display: none; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .game-wrapper {
+        grid-template-rows: 50px 1fr 100px;
+        grid-template-columns: 1fr;
+        grid-template-areas: "header" "board" "shop";
+    }
+    .ui-header { padding: 0 8px; }
+    .spacer { margin-right: 10px; padding-right: 10px; } /* Меньше отступ на мобиле */
+    
+    /* Horizontal Shop */
+    .ui-shop { flex-direction: row; }
+    
+    .shop-header {
+        width: 80px; height: 100%; border-bottom: none; border-right: var(--ui-border);
+        padding: 5px; justify-content: center;
+    }
+    .money-value { font-size: 16px; }
+
+    .shop-scroll-area {
+        overflow-x: auto; overflow-y: hidden; padding: 5px;
+        display: flex; align-items: center;
+    }
+
+    .shop-grid { flex-direction: row; gap: 8px; width: max-content; }
+    .tower-group { display: flex; width: max-content; gap: 6px; padding: 5px; height: 80px; align-items: center; }
+    .group-label { display: none; } 
+}
