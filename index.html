@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maze Defence</title>
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body class="theme-dark">
     <div class="game-wrapper">
@@ -23,7 +23,10 @@
                 <button id="btn-speed" class="btn-modern spacer">1x</button>
                 
                 <button id="btn-grid-size" class="btn-modern spacer">Map: 12x13</button>
-                
+
+                <div id="start-btn-container">
+                     <button id="btn-start" class="btn-modern btn-accent">Start!</button>
+                </div>
                 <div class="toggle-wrapper">
                     <span class="toggle-label">AUTO</span>
                     <label class="switch">
@@ -31,14 +34,10 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-
                 <button id="btn-pause" class="btn-modern btn-icon">⏸</button>
-                <div id="start-btn-container">
-                     <button id="btn-start" class="btn-modern btn-accent">Start!</button>
-                </div>
 
                 <div class="toggle-wrapper">
-                    <span class="toggle-label">TUTORIAL OFF</span>
+                    <span class="toggle-label">SKIP TUT</span>
                     <label class="switch">
                         <input type="checkbox" id="chk-tutorial">
                         <span class="slider round"></span>
@@ -69,53 +68,53 @@
                 <div class="shop-grid">
                     <div class="tower-group">
                         <div class="group-label">PULEMET</div>
-                        <div class="tower-card" draggable="true" data-type="radar1" data-cost="50">
-                            <div class="tower-preview" id="preview-radar1"></div><span class="tower-cost">50$</span>
+                        <div class="tower-card" draggable="true" data-type="radar1">
+                            <div class="tower-preview" id="preview-radar1"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="radar2" data-cost="150">
-                            <div class="tower-preview" id="preview-radar2"></div><span class="tower-cost">150$</span>
+                        <div class="tower-card" draggable="true" data-type="radar2">
+                            <div class="tower-preview" id="preview-radar2"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="radar3" data-cost="400">
-                            <div class="tower-preview" id="preview-radar3"></div><span class="tower-cost">400$</span>
+                        <div class="tower-card" draggable="true" data-type="radar3">
+                            <div class="tower-preview" id="preview-radar3"></div><span class="tower-cost"></span>
                         </div>
                     </div>
 
                     <div class="tower-group">
                         <div class="group-label">CANNON</div>
-                        <div class="tower-card" draggable="true" data-type="blaster1" data-cost="100">
-                            <div class="tower-preview" id="preview-blaster1"></div><span class="tower-cost">100$</span>
+                        <div class="tower-card" draggable="true" data-type="blaster1">
+                            <div class="tower-preview" id="preview-blaster1"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="blaster2" data-cost="300">
-                            <div class="tower-preview" id="preview-blaster2"></div><span class="tower-cost">300$</span>
+                        <div class="tower-card" draggable="true" data-type="blaster2">
+                            <div class="tower-preview" id="preview-blaster2"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="blaster3" data-cost="700">
-                            <div class="tower-preview" id="preview-blaster3"></div><span class="tower-cost">700$</span>
+                        <div class="tower-card" draggable="true" data-type="blaster3">
+                            <div class="tower-preview" id="preview-blaster3"></div><span class="tower-cost"></span>
                         </div>
                     </div>
 
                     <div class="tower-group">
                         <div class="group-label">SNIPER</div>
-                        <div class="tower-card" draggable="true" data-type="sniper1" data-cost="150">
-                            <div class="tower-preview" id="preview-sniper1"></div><span class="tower-cost">150$</span>
+                        <div class="tower-card" draggable="true" data-type="sniper1">
+                            <div class="tower-preview" id="preview-sniper1"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="sniper2" data-cost="450">
-                            <div class="tower-preview" id="preview-sniper2"></div><span class="tower-cost">450$</span>
+                        <div class="tower-card" draggable="true" data-type="sniper2">
+                            <div class="tower-preview" id="preview-sniper2"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="sniper3" data-cost="1000">
-                            <div class="tower-preview" id="preview-sniper3"></div><span class="tower-cost">1k$</span>
+                        <div class="tower-card" draggable="true" data-type="sniper3">
+                            <div class="tower-preview" id="preview-sniper3"></div><span class="tower-cost"></span>
                         </div>
                     </div>
 
                      <div class="tower-group">
                         <div class="group-label">ICE</div>
-                        <div class="tower-card" draggable="true" data-type="slow1" data-cost="100">
-                            <div class="tower-preview" id="preview-slow1"></div><span class="tower-cost">100$</span>
+                        <div class="tower-card" draggable="true" data-type="slow1">
+                            <div class="tower-preview" id="preview-slow1"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="slow2" data-cost="250">
-                            <div class="tower-preview" id="preview-slow2"></div><span class="tower-cost">250$</span>
+                        <div class="tower-card" draggable="true" data-type="slow2">
+                            <div class="tower-preview" id="preview-slow2"></div><span class="tower-cost"></span>
                         </div>
-                        <div class="tower-card" draggable="true" data-type="slow3" data-cost="600">
-                            <div class="tower-preview" id="preview-slow3"></div><span class="tower-cost">600$</span>
+                        <div class="tower-card" draggable="true" data-type="slow3">
+                            <div class="tower-preview" id="preview-slow3"></div><span class="tower-cost"></span>
                         </div>
                      </div>
                 </div>

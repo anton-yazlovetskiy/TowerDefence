@@ -41,7 +41,7 @@ body { background-color: var(--bg-color); color: var(--text-color); font-family:
 
 .header-content {
     display: flex; align-items: center; justify-content: space-between;
-    width: 100%; height: 100%; gap: 12px; padding-right: 20px;
+    width: 100%; height: 100%; gap: 6px; padding-right: 10px;
 }
 
 .stat-group, .btn-modern, .toggle-wrapper, .control-group { flex: 0 0 auto !important; }

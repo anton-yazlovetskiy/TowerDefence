@@ -15,37 +15,36 @@ const PALETTE = {
 /* TUNING */
 const TOWERS_CONFIG = {
     // RADAR (Machine Gun) - Green
-    radar1: { baseType: 'radar', tier: 1, color: PALETTE.radar, radius: 1.5, damage: 3,  speed: 1000, cost: 50,  cd: 6, hp: 150 }, 
-    radar2: { baseType: 'radar', tier: 2, color: PALETTE.radar, radius: 3.5, damage: 8,  speed: 1000, cost: 150, cd: 12, hp: 300 },
+    radar1: { baseType: 'radar', tier: 1, color: PALETTE.radar, radius: 1.5, damage: 10,  speed: 1000, cost: 50,  cd: 6, hp: 150 }, 
+    radar2: { baseType: 'radar', tier: 2, color: PALETTE.radar, radius: 3.5, damage: 20,  speed: 1000, cost: 250, cd: 12, hp: 300 },
     radar3: { baseType: 'radar', tier: 3, color: PALETTE.radar, radius: 5.5, damage: 70, speed: 1000, cost: 400, cd: 60, hp: 600 },
     
     // BLASTER (Cannon) - Orange
     blaster1: { baseType: 'blaster', tier: 1, color: PALETTE.blaster, radius: 1.5, damage: 20,  speed: 1000, cost: 100, cd: 25, hp: 200 },
     blaster2: { baseType: 'blaster', tier: 2, color: PALETTE.blaster, radius: 3.5, damage: 60,  speed: 1000, cost: 300, cd: 35, hp: 400 },
-    blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 5.5, damage: 300, speed: 1000, cost: 700, cd: 80, hp: 800 },
+    blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 5.5, damage: 700, speed: 1000, cost: 700, cd: 80, hp: 800 },
     
     // SNIPER (Triangle) - Red
     sniper1: { baseType: 'sniper', tier: 1, color: PALETTE.sniper, radius: 1.5, damage: 50,  speed: 1200, cost: 150,  cd: 55, hp: 100 },
     sniper2: { baseType: 'sniper', tier: 2, color: PALETTE.sniper, radius: 3.5, damage: 150, speed: 1500, cost: 450,  cd: 90,  hp: 200 },
-    sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 5.5, damage: 800, speed: 2000, cost: 1000, cd: 140, hp: 400 },
+    sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 12.5, damage: 2000, speed: 2000, cost: 1000, cd: 140, hp: 400 },
     
     // SLOW (Hexagon) - Blue
-    slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 1.5, damage: 1, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.8 },
-    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 250, cd: 20, hp: 400, slow: 0.6 },
-    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 5.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.4 }
+    slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 1.5, damage: 2, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.85 },
+    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 350, cd: 20, hp: 400, slow: 0.70 }, // UPDATED COST
+    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 5.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.50 }
 };
 
 const STATE = {
-    lives: 100, money: 11450, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0,
+    lives: 50, money: 300, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0, // UPDATED MONEY
     grid: [], path: [], 
     towers: [], enemies: [], projectiles: [], particles: [],
     isWaveActive: false, enemiesToSpawn: 0, spawnTimer: 0,
     dragData: null, hoverPos: null, selectedTower: null,
-    autoStart: false, isPaused: false, 
+    autoStart: true, isPaused: false, 
     diffMultiplier: 1, 
     gameSpeed: 1, 
     gridSize: 'normal',
-    // NEW STATE FLAG
     skipTutorial: false
 };
 
@@ -107,7 +106,9 @@ class Enemy {
         STATE.towers.forEach(t => {
             if (t.stats.slow > 0) {
                 const dist = Math.sqrt((t.x - this.x)**2 + (t.y - this.y)**2);
-                if (dist <= t.stats.radius) if (t.stats.slow < slowFactor) slowFactor = t.stats.slow;
+                if (dist <= t.stats.radius) {
+                    slowFactor *= t.stats.slow; // Умножаем текущий множитель на множитель башни
+                }
             }
         });
         currentSpeed *= slowFactor;
@@ -374,7 +375,12 @@ class InputHandler {
         // ... (existing controls)
 
         const autostart = document.getElementById('chk-autostart');
-        if (autostart) autostart.addEventListener('change', (e) => { STATE.autoStart = e.target.checked; });
+        if (autostart) {
+            // Устанавливаем состояние чекбокса согласно STATE
+            autostart.checked = STATE.autoStart; 
+            // Обработчик события
+            autostart.addEventListener('change', (e) => { STATE.autoStart = e.target.checked; });
+        }
         
         const btnPause = document.getElementById('btn-pause');
         if (btnPause) btnPause.addEventListener('click', (e) => { 
@@ -446,9 +452,23 @@ class InputHandler {
         const items = document.querySelectorAll('.tower-card'); const shop = document.querySelector('.ui-shop');
         if (!shop) return;
         items.forEach(item => {
-            const type = item.dataset.type; const cost = parseInt(item.dataset.cost);
-            item.addEventListener('dragstart', (e) => { if (STATE.money < cost) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', JSON.stringify({ source: 'shop', type, cost })); });
-            item.addEventListener('touchstart', (e) => { if (STATE.money < cost) return; STATE.dragData = { source: 'shop', type, cost }; }, {passive: false});
+            const cost = parseInt(item.dataset.cost);
+            const type = item.dataset.type;
+            
+            // Check affordability using dynamic data-cost (which is set in generateShopIcons)
+            item.addEventListener('dragstart', (e) => { 
+                const currentCost = parseInt(item.dataset.cost);
+                if (STATE.money < currentCost) { 
+                    e.preventDefault(); 
+                    return; 
+                } 
+                e.dataTransfer.setData('text/plain', JSON.stringify({ source: 'shop', type, cost: currentCost })); 
+            });
+            item.addEventListener('touchstart', (e) => { 
+                const currentCost = parseInt(item.dataset.cost);
+                if (STATE.money < currentCost) return; 
+                STATE.dragData = { source: 'shop', type, cost: currentCost }; 
+            }, {passive: false});
         });
         document.addEventListener('touchmove', (e) => { if (STATE.dragData) { e.preventDefault(); const t = e.touches[0]; STATE.hoverPos = this.getTouchGridPos(t.clientX, t.clientY); } }, {passive: false});
         document.addEventListener('touchend', (e) => { 
@@ -490,9 +510,6 @@ class InputHandler {
             if(tower) { 
                 STATE.selectedTower = tower; 
                 STATE.dragData = {source:'game', x:tower.x, y:tower.y, cost:tower.stats.cost}; 
-                // Store initial touch position for selling check
-                STATE.dragData.startX = t.clientX;
-                STATE.dragData.startY = t.clientY;
             } else {
                 STATE.selectedTower = null;
             }
@@ -565,11 +582,28 @@ function gameLoop() {
     }
 }
 
+function formatCost(cost) {
+    if (cost >= 1000) return (cost / 1000) + 'k$';
+    return cost + '$';
+}
+
 function generateShopIcons() {
     const keys = Object.keys(TOWERS_CONFIG);
     keys.forEach(key => {
+        const config = TOWERS_CONFIG[key];
         const container = document.getElementById(`preview-${key}`);
         if (!container) return;
+        
+        // DYNAMICALLY SET COST IN CARD ATTRIBUTES AND TEXT
+        const card = container.closest('.tower-card');
+        if (card) {
+            card.dataset.cost = config.cost;
+            const costSpan = card.querySelector('.tower-cost');
+            if (costSpan) {
+                costSpan.innerText = formatCost(config.cost);
+            }
+        }
+        
         const tempCvs = document.createElement('canvas');
         tempCvs.width = 40; tempCvs.height = 40; // Small clean size
         const tempCtx = tempCvs.getContext('2d');
@@ -723,13 +757,14 @@ function draw() {
 
 function updateUI() {
     const elLives = document.getElementById('stat-lives'); if(elLives) elLives.innerText = STATE.lives;
-    const elMoney = document.getElementById('stat-money'); if(elMoney) elMoney.innerText = STATE.money;
+    const elMoney = document.getElementById('stat-money'); if(elLives) elMoney.innerText = STATE.money;
     const elVp = document.getElementById('stat-vp'); if(elVp) elVp.innerText = STATE.victoryPoints;
     updateShopAffordability();
 }
 
 function updateShopAffordability() {
     document.querySelectorAll('.tower-card').forEach(card => {
+        // Price now read from data-cost set by generateShopIcons
         const cost = parseInt(card.dataset.cost);
         if (STATE.money < cost) {
             card.classList.add('cannot-afford');
@@ -741,6 +776,10 @@ function updateShopAffordability() {
 
 function showToast(msg) {
     const t = document.getElementById('toast'); if(!t) return;
+    // NEW: Скрываем кнопку перезапуска, если она была показана ранее (например, при Game Over)
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) restartBtn.style.display='none'; 
+    
     document.getElementById('toast-message').innerText = msg;
     t.classList.remove('hidden'); t.style.display='block'; setTimeout(() => t.style.display='none', 1500);
 }
@@ -806,8 +845,10 @@ const maze = new Maze(); const input = new InputHandler();
 
 window.onload = () => {
     maze.generateZigZag(); 
-    updateUI();
+    // This must run before updateUI to set prices for affordability check
     generateShopIcons(); 
+    updateUI();
+    
     // Start tutorial after setup, checks skipTutorial flag
     new Tutorial().start(); 
     handleResize();
