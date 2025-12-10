@@ -17,26 +17,26 @@ const TOWERS_CONFIG = {
     // RADAR (Machine Gun) - Green
     radar1: { baseType: 'radar', tier: 1, color: PALETTE.radar, radius: 1.5, damage: 3,  speed: 1000, cost: 50,  cd: 6, hp: 150 }, 
     radar2: { baseType: 'radar', tier: 2, color: PALETTE.radar, radius: 3.5, damage: 8,  speed: 1000, cost: 150, cd: 12, hp: 300 },
-    radar3: { baseType: 'radar', tier: 3, color: PALETTE.radar, radius: 8.5, damage: 70, speed: 1000, cost: 400, cd: 60, hp: 600 },
+    radar3: { baseType: 'radar', tier: 3, color: PALETTE.radar, radius: 5.5, damage: 70, speed: 1000, cost: 400, cd: 60, hp: 600 },
     
     // BLASTER (Cannon) - Orange
     blaster1: { baseType: 'blaster', tier: 1, color: PALETTE.blaster, radius: 1.5, damage: 20,  speed: 1000, cost: 100, cd: 25, hp: 200 },
     blaster2: { baseType: 'blaster', tier: 2, color: PALETTE.blaster, radius: 3.5, damage: 60,  speed: 1000, cost: 300, cd: 35, hp: 400 },
-    blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 8.5, damage: 300, speed: 1000, cost: 700, cd: 80, hp: 800 },
+    blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 5.5, damage: 300, speed: 1000, cost: 700, cd: 80, hp: 800 },
     
     // SNIPER (Triangle) - Red
     sniper1: { baseType: 'sniper', tier: 1, color: PALETTE.sniper, radius: 1.5, damage: 50,  speed: 1200, cost: 150,  cd: 55, hp: 100 },
     sniper2: { baseType: 'sniper', tier: 2, color: PALETTE.sniper, radius: 3.5, damage: 150, speed: 1500, cost: 450,  cd: 90,  hp: 200 },
-    sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 8.5, damage: 800, speed: 2000, cost: 1000, cd: 140, hp: 400 },
+    sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 5.5, damage: 800, speed: 2000, cost: 1000, cd: 140, hp: 400 },
     
     // SLOW (Hexagon) - Blue
-    slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 2.5, damage: 2, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.85 },
-    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 250, cd: 20, hp: 400, slow: 0.70 },
-    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 8.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.50 }
+    slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 1.5, damage: 1, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.8 },
+    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 250, cd: 20, hp: 400, slow: 0.6 },
+    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 5.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.4 }
 };
 
 const STATE = {
-    lives: 100, money: 450, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0,
+    lives: 100, money: 11450, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0,
     grid: [], path: [], 
     towers: [], enemies: [], projectiles: [], particles: [],
     isWaveActive: false, enemiesToSpawn: 0, spawnTimer: 0,
@@ -44,7 +44,9 @@ const STATE = {
     autoStart: false, isPaused: false, 
     diffMultiplier: 1, 
     gameSpeed: 1, 
-    gridSize: 'normal'
+    gridSize: 'normal',
+    // NEW STATE FLAG
+    skipTutorial: false
 };
 
 function getCSSVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
@@ -81,7 +83,8 @@ class Enemy {
         this.type = type; this.pathIndex = 0; this.progress = 0; this.alive = true;
         let hpMult = 1; if (type === 'tank') hpMult = 5.0; else if (type === 'shooter') hpMult = 1.2;
         
-        const diffFactor = STATE.diffMultiplier * 5;
+        // HP Multiplier: diffMultiplier * 5
+        const diffFactor = STATE.diffMultiplier * 5; 
         this.hp = (20 + (wave * 12)) * hpMult * diffFactor; 
         this.maxHp = this.hp;
         
@@ -153,8 +156,8 @@ class Enemy {
         this.hitSlowTimer = 70; 
         if (this.hp <= 0) {
             this.alive = false; this.spawnParticles();
-            let money = 30;
-            if (this.type === 'tank') { money = 80; STATE.victoryPoints += 10; }
+            let money = 30; // Increased reward
+            if (this.type === 'tank') { money = 80; STATE.victoryPoints += 10; } 
             if (this.type === 'shooter') { money = 50; STATE.lives++; } 
             STATE.money += money; updateUI(); checkWin();
         }
@@ -183,7 +186,6 @@ class Projectile {
         this.x = x; this.y = y; this.target = target;
         this.damage = damage; 
         this.color = color;
-        // Enemy projectiles slower
         this.speed = (source === 'tower') ? 0.8 : 0.3;
         this.alive = true; this.source = source;
     }
@@ -211,7 +213,6 @@ class Projectile {
             // Laser
             const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
             const len = 0.5 * cs; 
-            // Thickness based on damage (visual punch)
             const width = Math.min(6, Math.max(2, this.damage / 20));
             
             ctx.strokeStyle = PALETTE.laser;
@@ -283,7 +284,6 @@ class Tower {
         }
     }
 
-    // NEW DRAW METHOD: Geometric Shapes
     draw(ctx, cs, isIcon = false) {
         const cx = isIcon ? cs/2 : (this.x + 0.5) * cs; const cy = isIcon ? cs/2 : (this.y + 0.5) * cs;
         const base = this.stats.baseType; const tier = this.stats.tier; const color = this.stats.color;
@@ -367,9 +367,12 @@ class InputHandler {
     constructor() {
         this.setupShop(); this.setupCanvas();
         this.setupControls();
+        this.shopElement = document.querySelector('.ui-shop');
     }
     
     setupControls() {
+        // ... (existing controls)
+
         const autostart = document.getElementById('chk-autostart');
         if (autostart) autostart.addEventListener('change', (e) => { STATE.autoStart = e.target.checked; });
         
@@ -386,12 +389,26 @@ class InputHandler {
         const btnGrid = document.getElementById('btn-grid-size');
         if (btnGrid) btnGrid.addEventListener('click', () => this.toggleGridSize());
 
-        // SPEED TOGGLE
         const btnSpeed = document.getElementById('btn-speed');
         if (btnSpeed) {
             btnSpeed.addEventListener('click', () => {
                 STATE.gameSpeed = (STATE.gameSpeed === 1) ? 2 : 1;
                 btnSpeed.innerText = STATE.gameSpeed + 'x';
+            });
+        }
+        
+        // TUTORIAL TOGGLE CONTROL
+        const chkTutorial = document.getElementById('chk-tutorial');
+        if (chkTutorial) {
+            // Load state from localStorage
+            const skip = localStorage.getItem('skipTutorial') === 'true';
+            chkTutorial.checked = skip;
+            STATE.skipTutorial = skip;
+
+            // Save state on change
+            chkTutorial.addEventListener('change', (e) => {
+                STATE.skipTutorial = e.target.checked;
+                localStorage.setItem('skipTutorial', STATE.skipTutorial);
             });
         }
     }
@@ -434,20 +451,78 @@ class InputHandler {
             item.addEventListener('touchstart', (e) => { if (STATE.money < cost) return; STATE.dragData = { source: 'shop', type, cost }; }, {passive: false});
         });
         document.addEventListener('touchmove', (e) => { if (STATE.dragData) { e.preventDefault(); const t = e.touches[0]; STATE.hoverPos = this.getTouchGridPos(t.clientX, t.clientY); } }, {passive: false});
-        document.addEventListener('touchend', (e) => { if (STATE.dragData && STATE.hoverPos && STATE.dragData.source === 'shop') this.buildTower(STATE.hoverPos.x, STATE.hoverPos.y, STATE.dragData.type, STATE.dragData.cost); STATE.dragData = null; STATE.hoverPos = null; });
+        document.addEventListener('touchend', (e) => { 
+            if (STATE.dragData && STATE.dragData.source === 'shop') {
+                if (STATE.hoverPos) this.buildTower(STATE.hoverPos.x, STATE.hoverPos.y, STATE.dragData.type, STATE.dragData.cost); 
+            }
+            STATE.dragData = null; STATE.hoverPos = null; 
+        });
+        
         shop.addEventListener('dragover', (e) => { e.preventDefault(); });
         shop.addEventListener('drop', (e) => { e.preventDefault(); try { const d = JSON.parse(e.dataTransfer.getData('text/plain')); if (d.source === 'game') this.sellTower(d.x, d.y); } catch(err){} });
     }
+    
+    isOverShop(clientX, clientY) {
+        if (!this.shopElement) return false;
+        const rect = this.shopElement.getBoundingClientRect();
+        return clientX >= rect.left && clientX <= rect.right &&
+               clientY >= rect.top && clientY <= rect.bottom;
+    }
+    
     setupCanvas() {
         const cvs = document.getElementById('gameCanvas');
         if(!cvs) return;
+        
         cvs.addEventListener('click', (e) => { const pos = this.getMouseGridPos(e); if(!pos)return; STATE.selectedTower = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y) || null; });
         cvs.addEventListener('dragover', (e) => { e.preventDefault(); const pos = this.getMouseGridPos(e); if(pos) STATE.hoverPos = pos; });
         cvs.addEventListener('dragleave', () => STATE.hoverPos = null);
         cvs.addEventListener('drop', (e) => { e.preventDefault(); STATE.hoverPos = null; const pos = this.getMouseGridPos(e); if(!pos) return; try{ const d=JSON.parse(e.dataTransfer.getData('text/plain')); if(d.source==='shop') this.buildTower(pos.x, pos.y, d.type, d.cost); }catch(e){} });
         cvs.setAttribute('draggable','true');
+        
+        // DRAGSTART (Desktop)
         cvs.addEventListener('dragstart', (e) => { const pos = this.getMouseGridPos(e); const t = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y); if(t) { STATE.dragData = {source:'game',x:t.x,y:t.y}; e.dataTransfer.setData('text/plain', JSON.stringify({source:'game',x:t.x,y:t.y})); const img=new Image(); img.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; e.dataTransfer.setDragImage(img,0,0); } else e.preventDefault(); });
-        cvs.addEventListener('touchstart', (e) => { const t = e.touches[0]; const pos = this.getTouchGridPos(t.clientX, t.clientY); if(!pos) return; const tower = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y); if(tower) { STATE.selectedTower = tower; STATE.dragData = {source:'game', x:tower.x, y:tower.y, cost:tower.stats.cost}; } else STATE.selectedTower = null; }, {passive:false});
+        
+        // TOUCH EVENTS (Mobile)
+        cvs.addEventListener('touchstart', (e) => { 
+            const t = e.touches[0]; const pos = this.getTouchGridPos(t.clientX, t.clientY); 
+            if(!pos) return; 
+            const tower = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y); 
+            if(tower) { 
+                STATE.selectedTower = tower; 
+                STATE.dragData = {source:'game', x:tower.x, y:tower.y, cost:tower.stats.cost}; 
+                // Store initial touch position for selling check
+                STATE.dragData.startX = t.clientX;
+                STATE.dragData.startY = t.clientY;
+            } else {
+                STATE.selectedTower = null;
+            }
+        }, {passive:false});
+        
+        cvs.addEventListener('touchmove', (e) => {
+            if (STATE.dragData && STATE.dragData.source === 'game') {
+                const t = e.touches[0];
+                STATE.hoverPos = this.toGrid(t.clientX - canvas.getBoundingClientRect().left, t.clientY - canvas.getBoundingClientRect().top);
+                // Highlight shop if hovering over it
+                if (this.isOverShop(t.clientX, t.clientY)) {
+                    this.shopElement.classList.add('drag-over-delete');
+                } else {
+                    this.shopElement.classList.remove('drag-over-delete');
+                }
+            }
+        }, {passive:false});
+        
+        cvs.addEventListener('touchend', (e) => {
+            if (STATE.dragData && STATE.dragData.source === 'game') {
+                // Check if the drop was over the shop
+                const touch = e.changedTouches[0];
+                if (this.isOverShop(touch.clientX, touch.clientY)) {
+                    this.sellTower(STATE.dragData.x, STATE.dragData.y);
+                }
+                this.shopElement.classList.remove('drag-over-delete');
+            }
+            STATE.dragData = null;
+            STATE.hoverPos = null;
+        });
     }
     getMouseGridPos(e) { const r = canvas.getBoundingClientRect(); return this.toGrid(e.clientX - r.left, e.clientY - r.top); }
     getTouchGridPos(cx, cy) { const r = canvas.getBoundingClientRect(); return this.toGrid(cx - r.left, cy - r.top); }
@@ -490,7 +565,6 @@ function gameLoop() {
     }
 }
 
-// Fixed Icon Generation
 function generateShopIcons() {
     const keys = Object.keys(TOWERS_CONFIG);
     keys.forEach(key => {
@@ -694,13 +768,21 @@ class Tutorial {
             { el: 'board-container', title: "The Field", msg: "Place towers on the walls (lighter squares)." },
             { el: 'start-btn-container', title: "Ready?", msg: "Press Start to begin the first wave!" }
         ];
-        if (this.overlay && this.msgBox) { this.bindEvents(); this.start(); }
+        if (this.overlay && this.msgBox) { this.bindEvents(); }
     }
     bindEvents() {
         this.btn.addEventListener('click', () => this.next());
         this.skipBtn.addEventListener('click', () => this.end());
     }
-    start() { this.overlay.classList.remove('hidden'); this.msgBox.classList.remove('hidden'); this.update(); }
+    start() { 
+        if (STATE.skipTutorial) {
+            this.end();
+            return;
+        }
+        this.overlay.classList.remove('hidden'); 
+        this.msgBox.classList.remove('hidden'); 
+        this.update(); 
+    }
     update() {
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
         if (this.step >= this.steps.length) { this.end(); return; }
@@ -712,7 +794,12 @@ class Tutorial {
         }
     }
     next() { this.step++; this.update(); }
-    end() { this.overlay.classList.add('hidden'); this.msgBox.classList.add('hidden'); document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight')); handleResize(); }
+    end() { 
+        this.overlay.classList.add('hidden'); 
+        this.msgBox.classList.add('hidden'); 
+        document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight')); 
+        handleResize(); 
+    }
 }
 
 const maze = new Maze(); const input = new InputHandler();
@@ -721,7 +808,8 @@ window.onload = () => {
     maze.generateZigZag(); 
     updateUI();
     generateShopIcons(); 
-    new Tutorial(); 
+    // Start tutorial after setup, checks skipTutorial flag
+    new Tutorial().start(); 
     handleResize();
     setTimeout(handleResize, 100);
     setTimeout(handleResize, 500);
