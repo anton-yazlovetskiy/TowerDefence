@@ -402,21 +402,6 @@ class InputHandler {
                 btnSpeed.innerText = STATE.gameSpeed + 'x';
             });
         }
-        
-        // TUTORIAL TOGGLE CONTROL
-        const chkTutorial = document.getElementById('chk-tutorial');
-        if (chkTutorial) {
-            // Load state from localStorage
-            const skip = localStorage.getItem('skipTutorial') === 'true';
-            chkTutorial.checked = skip;
-            STATE.skipTutorial = skip;
-
-            // Save state on change
-            chkTutorial.addEventListener('change', (e) => {
-                STATE.skipTutorial = e.target.checked;
-                localStorage.setItem('skipTutorial', STATE.skipTutorial);
-            });
-        }
     }
 
     changeDiff(delta) {
@@ -814,10 +799,12 @@ class Tutorial {
         this.skipBtn.addEventListener('click', () => this.end());
     }
     start() { 
-        if (STATE.skipTutorial) {
+        // Load flag from storage if not already set by UI (which we removed)
+        if (localStorage.getItem('skipTutorial') === 'true') {
             this.end();
             return;
         }
+        
         this.overlay.classList.remove('hidden'); 
         this.msgBox.classList.remove('hidden'); 
         this.update(); 
@@ -837,6 +824,11 @@ class Tutorial {
         this.overlay.classList.add('hidden'); 
         this.msgBox.classList.add('hidden'); 
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight')); 
+        
+        // NEW: Устанавливаем флаг, чтобы не показывать туториал в следующий раз
+        STATE.skipTutorial = true;
+        localStorage.setItem('skipTutorial', 'true');
+        
         handleResize(); 
     }
 }
