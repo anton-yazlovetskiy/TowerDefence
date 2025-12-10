@@ -761,13 +761,17 @@ function updateShopAffordability() {
 
 function showToast(msg) {
     const t = document.getElementById('toast'); if(!t) return;
-    // NEW: Скрываем кнопку перезапуска, если она была показана ранее (например, при Game Over)
+    
+    // Сброс заголовка и скрытие кнопки рестарта для нейтральных сообщений
+    document.getElementById('toast-title').innerText = "Note"; 
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) restartBtn.style.display='none'; 
     
     document.getElementById('toast-message').innerText = msg;
-    t.classList.remove('hidden'); t.style.display='block'; setTimeout(() => t.style.display='none', 1500);
+    t.classList.remove('hidden'); t.style.display='block'; 
+    setTimeout(() => t.style.display='none', 1500);
 }
+
 function endGame(reason) {
     STATE.isPaused = true;
     const t = document.getElementById('toast');
