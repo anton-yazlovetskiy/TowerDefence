@@ -204,6 +204,137 @@ canvas {
 }
 #start-btn-container.tutorial-highlight { padding: 4px; margin: -4px; }
 
+/* === MONETIZATION STYLES (Dynamic Height) === */
+
+.monetization-overlay {
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000; 
+    width: 300px; 
+    max-width: 90%;
+    
+    /* Уменьшенное вертикальное заполнение для компактности */
+    padding: 80px 25px; 
+    
+    background: var(--panel-bg);
+    border: 2px solid var(--accent-color); 
+    box-shadow: 0 0 50px rgba(139, 92, 246, 0.4);
+    text-align: center;
+}
+
+/* NEW: Класс, который схлопывает блок с кнопками */
+.hidden-on-paid {
+    /* Эти свойства схлопнут контейнер плавно */
+    max-height: 0 !important; 
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    opacity: 0 !important; 
+    pointer-events: none; 
+    overflow: hidden;
+}
+
+/* Monetization Header - Heart + Lives */
+.monet-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 5px;
+    gap: 10px;
+}
+.monet-header .icon-heart { 
+    color: #f43f5e; 
+    font-size: 32px;
+}
+.monet-header span {
+    color: #f43f5e;
+}
+
+/* Payment Options Container */
+.monet-options {
+    display: flex;
+    justify-content: center; 
+    gap: 10px; 
+    margin-top: 15px;
+    margin-bottom: 10px; /* Отступ перед сообщением/кнопкой Continue */
+
+    /* НОВЫЙ СТИЛЬ: для плавного схлопывания */
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out; 
+    max-height: 150px; /* Достаточная высота для отображения кнопок */
+    overflow: hidden;
+}
+
+/* Square Coffee Button Style */
+.monet-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 70px; 
+    height: 70px; 
+    padding: 6px !important; 
+    
+    background: var(--wall-color) !important; 
+    color: var(--text-color) !important;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid var(--accent-color);
+    box-shadow: none !important;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.monet-btn:hover { background: rgba(139, 92, 246, 0.2) !important; }
+
+/* Icon (Coffee or Price) */
+.coffee-icon {
+    font-size: 20px; 
+    color: #f4f4f5; 
+    margin-bottom: 2px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+.coffee-label {
+    font-size: 9px; 
+    color: #aaa;
+    margin-top: -4px;
+}
+
+/* Reward text */
+.monet-reward {
+    font-size: 10px; 
+    font-weight: 700;
+    color: #2ecc71;
+}
+
+/* Style for Continue button after payment/cancellation */
+#btn-monet-continue {
+    margin-top: 10px; /* Скорректировано */
+    background: var(--accent-color) !important;
+    color: white !important;
+    font-weight: bold;
+    padding: 8px 25px;
+}
+
+/* MOBILE LAYOUT ADJUSTMENTS for MODAL */
+@media (max-width: 768px) {
+    .monetization-overlay {
+        width: 95%; 
+    }
+    .monet-options {
+        gap: 8px;
+    }
+    .monet-btn {
+        width: 65px;
+        height: 65px;
+    }
+}
+
 /* =========================================
    MOBILE LAYOUT
    ========================================= */

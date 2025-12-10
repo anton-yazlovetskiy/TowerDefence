@@ -31,12 +31,12 @@ const TOWERS_CONFIG = {
     
     // SLOW (Hexagon) - Blue
     slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 1.5, damage: 2, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.85 },
-    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 350, cd: 20, hp: 400, slow: 0.70 }, // UPDATED COST
+    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 350, cd: 20, hp: 400, slow: 0.70 },
     slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 5.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.50 }
 };
 
 const STATE = {
-    lives: 50, money: 300, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0, // UPDATED MONEY
+    lives: 12, money: 300, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0,
     grid: [], path: [], 
     towers: [], enemies: [], projectiles: [], particles: [],
     isWaveActive: false, enemiesToSpawn: 0, spawnTimer: 0,
@@ -45,7 +45,8 @@ const STATE = {
     diffMultiplier: 1, 
     gameSpeed: 1, 
     gridSize: 'normal',
-    skipTutorial: false
+    skipTutorial: false,
+    monetizationShown: false 
 };
 
 function getCSSVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
@@ -102,12 +103,13 @@ class Enemy {
         if (!this.alive) return;
         let currentSpeed = this.baseSpeed;
         
+        // 1. Замедление от Ледяных башен (Складывается умножением)
         let slowFactor = 1.0;
         STATE.towers.forEach(t => {
             if (t.stats.slow > 0) {
                 const dist = Math.sqrt((t.x - this.x)**2 + (t.y - this.y)**2);
                 if (dist <= t.stats.radius) {
-                    slowFactor *= t.stats.slow; // Умножаем текущий множитель на множитель башни
+                    slowFactor *= t.stats.slow; 
                 }
             }
         });
@@ -146,7 +148,15 @@ class Enemy {
     }
 
     teleportLoop() {
-        STATE.lives--; updateUI();
+        STATE.lives--; 
+        updateUI();
+        
+        // CRITICAL HP CHECK: Trigger only when lives hit exactly 10 and hasn't been shown yet.
+        if (STATE.lives === 10 && !STATE.monetizationShown) {
+             showMonetizationModal();
+             return;
+        }
+
         if (STATE.lives <= 0) { this.alive = false; endGame("Base Destroyed!"); return; }
         this.pathIndex = 0; this.progress = 0;
         const p = STATE.path[0]; this.x = p.x; this.y = p.y;
@@ -362,28 +372,77 @@ class Tower {
 }
 
 /* =========================================
+   UTILITIES (NEW)
+   ========================================= */
+
+function unpauseGame() {
+    document.getElementById('monetization-toast').classList.add('hidden');
+    STATE.isPaused = false; 
+    const btnPause = document.getElementById('btn-pause');
+    if (btnPause) btnPause.innerText = "⏸";
+}
+
+function showMonetizationModal() {
+    STATE.isPaused = true;
+    STATE.monetizationShown = true;
+    
+    // Reset modal state
+    const optionsContainer = document.getElementById('monet-options-container');
+    const paidMessage = document.getElementById('monet-paid-message');
+    
+    // Show payment options and hide thank you message
+    if (optionsContainer) optionsContainer.classList.remove('hidden-on-paid');
+    if (paidMessage) paidMessage.style.display = 'none';
+
+    // Update current lives display
+    document.getElementById('current-lives-display').innerText = STATE.lives;
+    
+    document.getElementById('monetization-toast').classList.remove('hidden');
+    const btnPause = document.getElementById('btn-pause');
+    if (btnPause) btnPause.innerText = "▶"; // Change pause button icon to 'play'
+}
+
+function handleMonetizationPayment(lives) {
+    // 1. Give lives immediately (relying on user trust)
+    STATE.lives += lives;
+    updateUI();
+    
+    // 2. Hide payment buttons and show thank you message
+    const optionsContainer = document.getElementById('monet-options-container');
+    const paidMessage = document.getElementById('monet-paid-message');
+    
+    // !ВАЖНО: Применяем класс, который теперь плавно схлопывает контейнер
+    if (optionsContainer) optionsContainer.classList.add('hidden-on-paid');
+    
+    // Показываем благодарность
+    if (paidMessage) paidMessage.style.display = 'block';
+    
+    showToast(`HP Restored! Received +${lives} lives! Thank you for your support!`);
+}
+
+/* =========================================
    INPUT & INIT
    ========================================= */
 class InputHandler {
     constructor() {
-        this.setupShop(); this.setupCanvas();
+        this.setupShop(); 
+        this.setupCanvas();
         this.setupControls();
         this.shopElement = document.querySelector('.ui-shop');
+        this.setupMonetizationControls(); 
     }
     
     setupControls() {
-        // ... (existing controls)
-
         const autostart = document.getElementById('chk-autostart');
         if (autostart) {
-            // Устанавливаем состояние чекбокса согласно STATE
             autostart.checked = STATE.autoStart; 
-            // Обработчик события
             autostart.addEventListener('change', (e) => { STATE.autoStart = e.target.checked; });
         }
         
         const btnPause = document.getElementById('btn-pause');
         if (btnPause) btnPause.addEventListener('click', (e) => { 
+            // Prevent unpausing if monetization modal is open
+            if (!document.getElementById('monetization-toast').classList.contains('hidden')) return;
             STATE.isPaused = !STATE.isPaused; e.target.innerText = STATE.isPaused ? "▶" : "⏸"; 
         });
 
@@ -402,6 +461,23 @@ class InputHandler {
                 btnSpeed.innerText = STATE.gameSpeed + 'x';
             });
         }
+    }
+    
+    setupMonetizationControls() {
+        const btnContinue = document.getElementById('btn-monet-continue');
+        if (btnContinue) {
+            btnContinue.addEventListener('click', unpauseGame);
+        }
+        
+        // Payment link click handler
+        document.querySelectorAll('.monet-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const lives = parseInt(e.currentTarget.dataset.lives);
+                // We grant lives and update the UI *before* the browser navigates to the PayPal link
+                handleMonetizationPayment(lives);
+                // The actual PayPal link opening is handled by the <a> tag's default behavior (target="_blank")
+            });
+        });
     }
 
     changeDiff(delta) {
@@ -437,7 +513,6 @@ class InputHandler {
         const items = document.querySelectorAll('.tower-card'); const shop = document.querySelector('.ui-shop');
         if (!shop) return;
         items.forEach(item => {
-            const cost = parseInt(item.dataset.cost);
             const type = item.dataset.type;
             
             // Check affordability using dynamic data-cost (which is set in generateShopIcons)
@@ -629,6 +704,12 @@ function checkWin() {
 
 function update() {
     if (STATE.isPaused || STATE.lives <= 0) return;
+    
+    // Check if we missed the monetization trigger in teleportLoop
+    if (STATE.lives <= 10 && STATE.lives > 0 && !STATE.monetizationShown) {
+         showMonetizationModal();
+    }
+
     if (STATE.isWaveActive && STATE.enemiesToSpawn > 0) {
         STATE.spawnTimer--;
         if (STATE.spawnTimer <= 0) {
@@ -737,7 +818,15 @@ function draw() {
         }
     }
 
-    if (STATE.isPaused) { ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; ctx.font = "bold 30px Arial"; ctx.textAlign="center"; ctx.fillText("PAUSED", canvas.width/2, canvas.height/2); }
+    if (STATE.isPaused) { 
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; 
+        ctx.fillRect(0,0,canvas.width, canvas.height); 
+        
+        if (document.getElementById('monetization-toast').classList.contains('hidden')) {
+            ctx.fillStyle = "white"; ctx.font = "bold 30px Arial"; ctx.textAlign="center"; 
+            ctx.fillText("PAUSED", canvas.width/2, canvas.height/2); 
+        }
+    }
 }
 
 function updateUI() {
@@ -749,7 +838,6 @@ function updateUI() {
 
 function updateShopAffordability() {
     document.querySelectorAll('.tower-card').forEach(card => {
-        // Price now read from data-cost set by generateShopIcons
         const cost = parseInt(card.dataset.cost);
         if (STATE.money < cost) {
             card.classList.add('cannot-afford');
@@ -762,7 +850,6 @@ function updateShopAffordability() {
 function showToast(msg) {
     const t = document.getElementById('toast'); if(!t) return;
     
-    // Сброс заголовка и скрытие кнопки рестарта для нейтральных сообщений
     document.getElementById('toast-title').innerText = "Note"; 
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) restartBtn.style.display='none'; 
@@ -779,6 +866,8 @@ function endGame(reason) {
     document.getElementById('toast-message').innerText = reason + "\nWave: " + STATE.wave;
     document.getElementById('restart-btn').style.display='inline-block';
     t.classList.remove('hidden'); t.style.display='block';
+    
+    document.getElementById('monetization-toast').classList.add('hidden');
 }
 
 class Tutorial {
@@ -803,7 +892,6 @@ class Tutorial {
         this.skipBtn.addEventListener('click', () => this.end());
     }
     start() { 
-        // Load flag from storage if not already set by UI (which we removed)
         if (localStorage.getItem('skipTutorial') === 'true') {
             this.end();
             return;
@@ -829,8 +917,6 @@ class Tutorial {
         this.msgBox.classList.add('hidden'); 
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight')); 
         
-        // NEW: Устанавливаем флаг, чтобы не показывать туториал в следующий раз
-        STATE.skipTutorial = true;
         localStorage.setItem('skipTutorial', 'true');
         
         handleResize(); 
@@ -841,11 +927,9 @@ const maze = new Maze(); const input = new InputHandler();
 
 window.onload = () => {
     maze.generateZigZag(); 
-    // This must run before updateUI to set prices for affordability check
     generateShopIcons(); 
     updateUI();
     
-    // Start tutorial after setup, checks skipTutorial flag
     new Tutorial().start(); 
     handleResize();
     setTimeout(handleResize, 100);

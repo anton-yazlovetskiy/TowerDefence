@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maze Defence</title>
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body class="theme-dark">
     <div class="game-wrapper">
@@ -50,12 +50,45 @@
                 <p id="toast-message">Result</p>
                 <button id="restart-btn" class="btn-modern btn-accent">Restart</button>
             </div>
-        </main>
+            
+            <div id="monetization-toast" class="toast hidden monetization-overlay">
+                
+                <div class="monet-header">
+                    <span class="stat-icon icon-heart">😢  ♥</span>
+                    <span id="current-lives-display"></span>
+                </div>
+                
+                
+                <div id="monet-options-container" class="monet-options">
+                    <a href="https://www.paypal.com/paypalme/yazAnton/1" target="_blank" class="btn-modern monet-btn" data-lives="25">
+                        <span class="coffee-icon">☕</span>
+                        <span class="coffee-label">1$</span>
+                        <span class="monet-reward">+25 HP</span>
+                    </a>
+                    <a href="https://www.paypal.com/paypalme/yazAnton/2" target="_blank" class="btn-modern monet-btn" data-lives="50">
+                        <span class="coffee-icon">☕☕</span>
+                        <span class="coffee-label">2$</span>
+                        <span class="monet-reward">+50 HP</span>
+                    </a>
+                    <a href="https://www.paypal.com/paypalme/yazAnton/3" target="_blank" class="btn-modern monet-btn" data-lives="100">
+                        <span class="coffee-icon">☕☕☕</span>
+                        <span class="coffee-label">3$</span>
+                        <span class="monet-reward">+100 HP</span>
+                    </a>
+                </div>
+                
+                <p id="monet-paid-message" class="hidden-on-paid" style="margin-top: 15px; font-size: 14px; color: #2ecc71;">
+                    Thank you for your support! Click 'Continue' to restore HP and resume.
+                </p>
+                
+                <button id="btn-monet-continue" class="btn-modern btn-accent">Continue</button>
+            </div>
+            </main>
 
         <aside class="ui-shop" id="shop-container">
             <div class="shop-header">
                 <span class="money-label">FUNDS</span>
-                <span class="money-value">$<span id="stat-money">450</span></span>
+                <span class="money-value">$<span id="stat-money">300</span></span>
             </div>
 
             <div class="shop-scroll-area">
