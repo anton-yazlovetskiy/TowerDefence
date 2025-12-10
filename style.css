@@ -127,17 +127,16 @@ canvas {
     color: var(--accent-color); text-align: center; margin-bottom: 2px; font-weight: 800;
 }
 
-/* --- TOWER CARD & COST (UPDATED) --- */
+/* --- TOWER CARD & COST --- */
 .tower-card {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px; cursor: grab; padding: 4px; border-radius: 4px; transition: all 0.2s;
     width: 50px; flex: 0 0 auto !important;
-    position: relative; /* For absolute cost */
+    position: relative; 
 }
 .tower-card:hover { background: rgba(255,255,255,0.1); }
 .tower-card:active { transform: scale(0.95); cursor: grabbing; }
 
-/* COST BADGE STYLE */
 .tower-cost { 
     position: absolute; 
     top: 0; right: 0;
@@ -145,12 +144,13 @@ canvas {
     color: #fff;
     font-size: 9px; font-weight: 700; 
     padding: 2px 4px;
-    border-radius: 0 4px 0 4px; /* Rounded corner matching card */
+    border-radius: 0 4px 0 4px;
     z-index: 5;
     white-space: nowrap;
 }
 
 .tower-preview { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+.tower-preview canvas { width: 32px; height: 32px; border: none; background: transparent; box-shadow: none; border-radius: 0; }
 
 /* AFFORDABILITY */
 .tower-card.cannot-afford { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
@@ -169,7 +169,7 @@ canvas {
 }
 .toast.hidden { display: none; }
 
-/* TUTORIAL & POPUPS */
+/* TUTORIAL */
 #tutorial-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.7); z-index: 999;
@@ -205,7 +205,7 @@ canvas {
 #start-btn-container.tutorial-highlight { padding: 4px; margin: -4px; }
 
 /* =========================================
-   MOBILE LAYOUT (GRID FIX)
+   MOBILE LAYOUT
    ========================================= */
 @media (max-width: 768px) {
     .game-wrapper {
@@ -227,33 +227,24 @@ canvas {
         height: auto; max-height: 40vh;
         border-left: none; border-top: var(--ui-border);
     }
-    
     .shop-header { 
         width: 100%; height: 32px; 
         border-bottom: var(--ui-border); 
         flex-direction: row; justify-content: center; gap: 10px; padding: 0;
     }
-    
     .shop-scroll-area { padding: 6px; overflow: visible; }
-
-    /* GRID LAYOUT */
     .shop-grid { 
-        display: grid;
-        grid-template-columns: 1fr 1fr; 
+        display: grid; grid-template-columns: 1fr 1fr; 
         gap: 6px; width: 100%;
     }
-    
     .tower-group { 
         display: flex; justify-content: space-evenly; align-items: center;
         gap: 2px; padding: 6px; height: auto; 
         grid-template-columns: none; 
     }
-    
     .group-label { display: none; } 
-    
-    /* Slightly smaller cards for safety */
     .tower-card { width: 44px; padding: 4px; height: 44px; } 
-    .tower-preview { width: 100%; height: 100%; } 
-    /* Force cost to be very small on mobile if needed, though absolute helps */
+    .tower-preview { width: 100%; height: 100%; }
+    .tower-preview canvas { width: 36px; height: 36px; } 
     .tower-cost { font-size: 8px; padding: 1px 3px; }
 }

@@ -7,26 +7,32 @@ let CONFIG = {
 };
 
 const PALETTE = {
-    radar: '#2ecc71', blaster: '#e67e22', sniper: '#e74c3c', slow: '#00cec9',
-    tank: '#3498db', shooter: '#9b59b6', normal: '#f1c40f'
+    radar: '#2ecc71', blaster: '#f39c12', sniper: '#e74c3c', slow: '#3498db',
+    tank: '#9b59b6', shooter: '#e84393', normal: '#f1c40f',
+    laser: '#00ff00', enemyProj: '#ff0000'
 };
 
+/* TUNING */
 const TOWERS_CONFIG = {
-    radar1: { baseType: 'radar', tier: 1, color: PALETTE.radar, radius: 2.5, damage: 4,  speed: 1000, cost: 50,  cd: 20, hp: 150 },
-    radar2: { baseType: 'radar', tier: 2, color: PALETTE.radar, radius: 5.5, damage: 10, speed: 1000, cost: 150, cd: 15, hp: 300 },
-    radar3: { baseType: 'radar', tier: 3, color: PALETTE.radar, radius: 8.5, damage: 25, speed: 1000, cost: 400, cd: 10, hp: 600 },
+    // RADAR (Machine Gun) - Green
+    radar1: { baseType: 'radar', tier: 1, color: PALETTE.radar, radius: 1.5, damage: 3,  speed: 1000, cost: 50,  cd: 6, hp: 150 }, 
+    radar2: { baseType: 'radar', tier: 2, color: PALETTE.radar, radius: 3.5, damage: 8,  speed: 1000, cost: 150, cd: 12, hp: 300 },
+    radar3: { baseType: 'radar', tier: 3, color: PALETTE.radar, radius: 8.5, damage: 70, speed: 1000, cost: 400, cd: 60, hp: 600 },
     
-    blaster1: { baseType: 'blaster', tier: 1, color: PALETTE.blaster, radius: 2.5, damage: 25,  speed: 1000, cost: 100, cd: 50, hp: 200 },
-    blaster2: { baseType: 'blaster', tier: 2, color: PALETTE.blaster, radius: 5.5, damage: 70,  speed: 1000, cost: 300, cd: 45, hp: 400 },
-    blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 8.5, damage: 180, speed: 1000, cost: 700, cd: 40, hp: 800 },
+    // BLASTER (Cannon) - Orange
+    blaster1: { baseType: 'blaster', tier: 1, color: PALETTE.blaster, radius: 1.5, damage: 20,  speed: 1000, cost: 100, cd: 25, hp: 200 },
+    blaster2: { baseType: 'blaster', tier: 2, color: PALETTE.blaster, radius: 3.5, damage: 60,  speed: 1000, cost: 300, cd: 35, hp: 400 },
+    blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 8.5, damage: 300, speed: 1000, cost: 700, cd: 80, hp: 800 },
     
-    sniper1: { baseType: 'sniper', tier: 1, color: PALETTE.sniper, radius: 3.5, damage: 60,  speed: 1200, cost: 150,  cd: 100, hp: 100 },
-    sniper2: { baseType: 'sniper', tier: 2, color: PALETTE.sniper, radius: 6.5, damage: 160, speed: 1500, cost: 450,  cd: 90,  hp: 200 },
-    sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 9.5, damage: 450, speed: 2000, cost: 1000, cd: 80,  hp: 400 },
+    // SNIPER (Triangle) - Red
+    sniper1: { baseType: 'sniper', tier: 1, color: PALETTE.sniper, radius: 1.5, damage: 50,  speed: 1200, cost: 150,  cd: 55, hp: 100 },
+    sniper2: { baseType: 'sniper', tier: 2, color: PALETTE.sniper, radius: 3.5, damage: 150, speed: 1500, cost: 450,  cd: 90,  hp: 200 },
+    sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 8.5, damage: 800, speed: 2000, cost: 1000, cd: 140, hp: 400 },
     
-    slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 2.5, damage: 2, speed: 1000, cost: 100, cd: 60, hp: 200, slow: 0.85 },
-    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 5.5, damage: 5, speed: 1000, cost: 250, cd: 60, hp: 400, slow: 0.70 },
-    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 8.5, damage: 10, speed: 1000, cost: 600, cd: 60, hp: 800, slow: 0.50 }
+    // SLOW (Hexagon) - Blue
+    slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 2.5, damage: 2, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.85 },
+    slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 250, cd: 20, hp: 400, slow: 0.70 },
+    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 8.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.50 }
 };
 
 const STATE = {
@@ -37,6 +43,7 @@ const STATE = {
     dragData: null, hoverPos: null, selectedTower: null,
     autoStart: false, isPaused: false, 
     diffMultiplier: 1, 
+    gameSpeed: 1, 
     gridSize: 'normal'
 };
 
@@ -74,14 +81,12 @@ class Enemy {
         this.type = type; this.pathIndex = 0; this.progress = 0; this.alive = true;
         let hpMult = 1; if (type === 'tank') hpMult = 5.0; else if (type === 'shooter') hpMult = 1.2;
         
-        const diffFactor = STATE.diffMultiplier * 10;
+        const diffFactor = STATE.diffMultiplier * 5;
         this.hp = (20 + (wave * 12)) * hpMult * diffFactor; 
         this.maxHp = this.hp;
         
-        this.baseSpeed = 0.03 + (wave * 0.003); 
+        this.baseSpeed = 0.06 + (wave * 0.003); 
         this.attackCooldown = 0; this.attackRange = 3.5; this.attackDmg = 5 + wave;
-        
-        // Таймер замедления от получения урона (инициализация)
         this.hitSlowTimer = 0; 
 
         if (STATE.path && STATE.path.length > 0) {
@@ -95,7 +100,6 @@ class Enemy {
         if (!this.alive) return;
         let currentSpeed = this.baseSpeed;
         
-        // 1. Замедление от Ледяных башен
         let slowFactor = 1.0;
         STATE.towers.forEach(t => {
             if (t.stats.slow > 0) {
@@ -105,9 +109,8 @@ class Enemy {
         });
         currentSpeed *= slowFactor;
 
-        // 2. Замедление от получения урона (Impulse slow)
         if (this.hitSlowTimer > 0) {
-            currentSpeed *= 0.6; // <--- НАСТРОЙКА: Сила замедления (0.9 = 90% скорости, то есть тормозим на 10%)
+            currentSpeed *= 0.6; 
             this.hitSlowTimer--;
         }
 
@@ -115,7 +118,7 @@ class Enemy {
             if (this.attackCooldown > 0) this.attackCooldown--;
             const target = this.findTargetTower();
             if (target && this.attackCooldown <= 0) {
-                STATE.projectiles.push(new Projectile(this.x, this.y, target, this.attackDmg, PALETTE.sniper, 'enemy'));
+                STATE.projectiles.push(new Projectile(this.x, this.y, target, this.attackDmg, PALETTE.enemyProj, 'enemy'));
                 this.attackCooldown = 80;
             }
         }
@@ -140,22 +143,19 @@ class Enemy {
 
     teleportLoop() {
         STATE.lives--; updateUI();
-        if (STATE.lives <= 0) { this.alive = false; endGame(); return; }
+        if (STATE.lives <= 0) { this.alive = false; endGame("Base Destroyed!"); return; }
         this.pathIndex = 0; this.progress = 0;
         const p = STATE.path[0]; this.x = p.x; this.y = p.y;
     }
 
     takeDamage(amt) {
         this.hp -= amt;
-        
-        // При получении урона ставим таймер замедления
-        this.hitSlowTimer = 70; // <--- НАСТРОЙКА: Длительность в кадрах (60 кадров = 1 секунда, 45 = ~0.75 сек)
-
+        this.hitSlowTimer = 70; 
         if (this.hp <= 0) {
             this.alive = false; this.spawnParticles();
-            let money = 15;
-            if (this.type === 'tank') { money = 40; STATE.victoryPoints += 10; }
-            if (this.type === 'shooter') { money = 25; STATE.lives++; } 
+            let money = 30;
+            if (this.type === 'tank') { money = 80; STATE.victoryPoints += 10; }
+            if (this.type === 'shooter') { money = 50; STATE.lives++; } 
             STATE.money += money; updateUI(); checkWin();
         }
     }
@@ -181,19 +181,55 @@ class Enemy {
 class Projectile {
     constructor(x, y, target, damage, color, source = 'tower') {
         this.x = x; this.y = y; this.target = target;
-        this.damage = damage; this.color = color;
-        this.speed = 0.5; this.alive = true; this.source = source;
+        this.damage = damage; 
+        this.color = color;
+        // Enemy projectiles slower
+        this.speed = (source === 'tower') ? 0.8 : 0.3;
+        this.alive = true; this.source = source;
     }
     update() {
         let targetExists = false;
         if (this.source === 'tower') targetExists = this.target.alive;
         else targetExists = STATE.towers.includes(this.target);
+        
         if (!targetExists) { this.alive = false; return; }
+        
         const dx = this.target.x - this.x; const dy = this.target.y - this.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
+        
         if (dist < this.speed) {
-            this.target.takeDamage(this.damage); this.alive = false; STATE.particles.push(new Particle(this.x, this.y, this.color));
-        } else { this.x += (dx/dist)*this.speed; this.y += (dy/dist)*this.speed; }
+            this.target.takeDamage(this.damage); this.alive = false; 
+            STATE.particles.push(new Particle(this.x, this.y, this.color));
+        } else { 
+            this.x += (dx/dist)*this.speed; 
+            this.y += (dy/dist)*this.speed; 
+        }
+    }
+    
+    draw(ctx, cs) {
+        if (this.source === 'tower') {
+            // Laser
+            const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
+            const len = 0.5 * cs; 
+            // Thickness based on damage (visual punch)
+            const width = Math.min(6, Math.max(2, this.damage / 20));
+            
+            ctx.strokeStyle = PALETTE.laser;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            const px = (this.x + 0.5) * cs;
+            const py = (this.y + 0.5) * cs;
+            ctx.moveTo(px, py);
+            ctx.lineTo(px - Math.cos(angle) * len, py - Math.sin(angle) * len);
+            ctx.stroke();
+        } else {
+            // Enemy Ball (Big)
+            ctx.fillStyle = this.color; 
+            ctx.beginPath(); 
+            ctx.arc((this.x+0.5)*cs, (this.y+0.5)*cs, cs*0.15, 0, Math.PI*2); 
+            ctx.fill(); 
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+        }
     }
 }
 
@@ -246,42 +282,78 @@ class Tower {
             for(let i=0; i<8; i++) STATE.particles.push(new Particle(this.x, this.y, '#95a5a6'));
         }
     }
+
+    // NEW DRAW METHOD: Geometric Shapes
     draw(ctx, cs, isIcon = false) {
         const cx = isIcon ? cs/2 : (this.x + 0.5) * cs; const cy = isIcon ? cs/2 : (this.y + 0.5) * cs;
         const base = this.stats.baseType; const tier = this.stats.tier; const color = this.stats.color;
+        const size = cs * 0.7; // 70% of cell
+        
         ctx.save(); ctx.translate(cx, cy);
 
+        // 1. RADAR (CIRCLE + RECT)
         if (base === 'radar') {
-            ctx.fillStyle = '#2c3e50'; ctx.beginPath(); ctx.arc(0, 0, cs*0.35, 0, Math.PI*2); ctx.fill();
             if(!isIcon) ctx.rotate(this.rotation); else ctx.rotate(-Math.PI/4);
-            ctx.fillStyle = color; ctx.fillRect(-cs*0.1, -cs*0.2, cs*0.2, cs*0.4); 
-            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, cs*0.12, 0, Math.PI*2); ctx.fill(); 
+            // Base
+            ctx.fillStyle = '#34495e'; ctx.beginPath(); ctx.arc(0, 0, size*0.4, 0, Math.PI*2); ctx.fill();
+            // Barrel
+            ctx.fillStyle = color; 
+            // Multi-barrel for tiers
+            if (tier === 1) ctx.fillRect(0, -size*0.1, size*0.5, size*0.2);
+            else if (tier === 2) { ctx.fillRect(0, -size*0.15, size*0.5, size*0.1); ctx.fillRect(0, size*0.05, size*0.5, size*0.1); }
+            else { ctx.fillRect(0, -size*0.2, size*0.6, size*0.4); }
         } 
+        
+        // 2. BLASTER (SQUARE)
         else if (base === 'blaster') {
-            ctx.fillStyle = '#34495e'; ctx.fillRect(-cs*0.35, -cs*0.35, cs*0.7, cs*0.7);
             if(!isIcon) ctx.rotate(this.rotation); else ctx.rotate(-Math.PI/4);
-            ctx.fillStyle = color; ctx.beginPath(); ctx.rect(-cs*0.15, -cs*0.15, cs*0.3, cs*0.3); ctx.fill();
-            ctx.beginPath(); ctx.rect(0, -cs*0.1, cs*0.4, cs*0.2); ctx.fill(); 
+            ctx.fillStyle = '#2c3e50'; ctx.fillRect(-size*0.35, -size*0.35, size*0.7, size*0.7);
+            ctx.fillStyle = color; 
+            // Inner core
+            const core = size * (0.2 + tier * 0.1);
+            ctx.fillRect(-core/2, -core/2, core, core);
+            // Barrel
+            ctx.fillStyle = '#7f8c8d'; ctx.fillRect(0, -size*0.1, size*0.5, size*0.2);
         }
+        
+        // 3. SNIPER (TRIANGLE)
         else if (base === 'sniper') {
-            ctx.fillStyle = '#2c3e50'; ctx.beginPath(); ctx.moveTo(0, -cs*0.3); ctx.lineTo(cs*0.3, cs*0.3); ctx.lineTo(-cs*0.3, cs*0.3); ctx.fill();
             if(!isIcon) ctx.rotate(this.rotation); else ctx.rotate(-Math.PI/4);
-            ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(cs*0.5, 0); ctx.stroke();
-            ctx.fillStyle = color; ctx.beginPath(); ctx.arc(0, 0, cs*0.1, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#2c3e50'; 
+            ctx.beginPath(); ctx.moveTo(size*0.4, 0); ctx.lineTo(-size*0.3, size*0.3); ctx.lineTo(-size*0.3, -size*0.3); ctx.fill();
+            // Long Barrel
+            ctx.strokeStyle = color; ctx.lineWidth = 2 + tier; 
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(size*0.6, 0); ctx.stroke();
+            // Center Dot
+            ctx.fillStyle = color; ctx.beginPath(); ctx.arc(0, 0, size*0.15, 0, Math.PI*2); ctx.fill();
         }
+        
+        // 4. SLOW (HEXAGON)
         else if (base === 'slow') {
             ctx.fillStyle = color;
-            ctx.beginPath(); for (let i = 0; i < 6; i++) ctx.lineTo(cs*0.3 * Math.cos(i*Math.PI/3), cs*0.3 * Math.sin(i*Math.PI/3)); ctx.closePath(); ctx.fill();
-            const pulse = isIcon ? 0 : (Math.sin(Date.now() / 200) + 1) * 0.5 * cs * 0.1;
-            ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, cs*0.1 + pulse, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); 
+            for (let i = 0; i < 6; i++) {
+                const angle = i * Math.PI / 3;
+                ctx.lineTo(size*0.4 * Math.cos(angle), size*0.4 * Math.sin(angle));
+            }
+            ctx.closePath(); ctx.fill();
+            
+            // Pulse effect
+            const pulse = isIcon ? 0 : (Math.sin(Date.now() / 200) + 1) * 0.5 * size * 0.1;
+            ctx.strokeStyle = "white"; ctx.lineWidth = tier; 
+            ctx.beginPath(); ctx.arc(0, 0, size*0.15 + pulse, 0, Math.PI*2); ctx.stroke();
         }
+
         ctx.restore();
-        ctx.fillStyle = "white";
-        const dotY = cy + cs*0.35; const dotSize = cs*0.06; const spacing = cs*0.12;
-        if (tier === 1) { ctx.beginPath(); ctx.arc(cx, dotY, dotSize, 0, Math.PI*2); ctx.fill(); }
-        else if (tier === 2) { ctx.beginPath(); ctx.arc(cx-spacing/2, dotY, dotSize, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+spacing/2, dotY, dotSize, 0, Math.PI*2); ctx.fill(); }
-        else if (tier === 3) { ctx.beginPath(); ctx.arc(cx-spacing, dotY, dotSize, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx, dotY, dotSize, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+spacing, dotY, dotSize, 0, Math.PI*2); ctx.fill(); }
+
+        // Level Dots (Only on board, not icons)
         if (!isIcon) {
+            ctx.fillStyle = "white";
+            const dotY = cy + size*0.4; const dotSize = cs*0.06; const spacing = cs*0.12;
+            if (tier === 1) { ctx.beginPath(); ctx.arc(cx, dotY, dotSize, 0, Math.PI*2); ctx.fill(); }
+            else if (tier === 2) { ctx.beginPath(); ctx.arc(cx-spacing/2, dotY, dotSize, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+spacing/2, dotY, dotSize, 0, Math.PI*2); ctx.fill(); }
+            else if (tier === 3) { ctx.beginPath(); ctx.arc(cx-spacing, dotY, dotSize, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx, dotY, dotSize, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+spacing, dotY, dotSize, 0, Math.PI*2); ctx.fill(); }
+            
             const hpPct = this.hp / this.maxHp;
             if (hpPct < 1.0) drawCircularHP(ctx, cx, cy, cs*0.42, hpPct, hpPct > 0.5 ? '#2ecc71' : '#e74c3c');
         }
@@ -313,6 +385,15 @@ class InputHandler {
 
         const btnGrid = document.getElementById('btn-grid-size');
         if (btnGrid) btnGrid.addEventListener('click', () => this.toggleGridSize());
+
+        // SPEED TOGGLE
+        const btnSpeed = document.getElementById('btn-speed');
+        if (btnSpeed) {
+            btnSpeed.addEventListener('click', () => {
+                STATE.gameSpeed = (STATE.gameSpeed === 1) ? 2 : 1;
+                btnSpeed.innerText = STATE.gameSpeed + 'x';
+            });
+        }
     }
 
     changeDiff(delta) {
@@ -396,20 +477,30 @@ class InputHandler {
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
 function gameLoop() { 
-    try { update(); draw(); requestAnimationFrame(gameLoop); } catch(e) { console.error(e); }
+    try {
+        for(let i = 0; i < STATE.gameSpeed; i++) {
+            update();
+        }
+        draw(); 
+        requestAnimationFrame(gameLoop); 
+    } catch(e) {
+        console.error(e);
+    }
 }
 
+// Fixed Icon Generation
 function generateShopIcons() {
     const keys = Object.keys(TOWERS_CONFIG);
     keys.forEach(key => {
         const container = document.getElementById(`preview-${key}`);
         if (!container) return;
         const tempCvs = document.createElement('canvas');
-        tempCvs.width = 60; tempCvs.height = 60;
+        tempCvs.width = 40; tempCvs.height = 40; // Small clean size
         const tempCtx = tempCvs.getContext('2d');
         const mockTower = new Tower(0,0, key);
-        mockTower.draw(tempCtx, 60, true);
+        mockTower.draw(tempCtx, 40, true);
         container.innerHTML = ''; container.appendChild(tempCvs);
     });
 }
@@ -426,6 +517,13 @@ function endWave() {
     STATE.isWaveActive = false; STATE.wave++; updateUI();
     const btn = document.getElementById('btn-start');
     if(btn) { btn.disabled = false; btn.innerText = "Start!"; }
+    
+    // BANKRUPTCY CHECK
+    if (STATE.money < 50 && STATE.towers.length === 0) {
+        endGame("No Money & No Towers!");
+        return;
+    }
+
     if (STATE.autoStart) setTimeout(startWave, 1000);
 }
 function checkWin() {
@@ -460,11 +558,9 @@ function update() {
 }
 
 function handleResize() {
-    // Measure current header and shop height
     const headerEl = document.querySelector('.ui-header');
     const shopEl = document.querySelector('.ui-shop');
     
-    // Fallback defaults just in case
     let headerH = headerEl ? headerEl.offsetHeight : 60;
     let shopH = shopEl ? shopEl.offsetHeight : 0;
     
@@ -477,7 +573,6 @@ function handleResize() {
     
     if (CONFIG.cols <= 0 || CONFIG.rows <= 0) return;
 
-    // Calculate max possible cell size that fits in both width and height
     const size = Math.floor(Math.min(availW / CONFIG.cols, availH / CONFIG.rows));
     
     if (size > 0 && canvas) { 
@@ -528,9 +623,13 @@ function draw() {
         if (!isNaN(hpPct)) drawCircularHP(ctx, ex, ey, r + 4, hpPct, (hpPct > 0.5 ? '#0f0' : '#f00'));
     });
 
-    STATE.towers.forEach(t => t.draw(ctx, cs));
-    STATE.projectiles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc((p.x+0.5)*cs, (p.y+0.5)*cs, cs*0.08, 0, Math.PI*2); ctx.fill(); });
+    // 1. Рисуем лазеры (снизу)
+    STATE.projectiles.forEach(p => { if (p.source === 'tower') p.draw(ctx, cs); });
+    // 2. Рисуем снаряды врагов (сверху)
+    STATE.projectiles.forEach(p => { if (p.source !== 'tower') p.draw(ctx, cs); });
+    
     STATE.particles.forEach(p => p.draw(ctx, cs));
+    STATE.towers.forEach(t => t.draw(ctx, cs));
 
     if (STATE.hoverPos) {
         const {x, y} = STATE.hoverPos;
@@ -571,9 +670,11 @@ function showToast(msg) {
     document.getElementById('toast-message').innerText = msg;
     t.classList.remove('hidden'); t.style.display='block'; setTimeout(() => t.style.display='none', 1500);
 }
-function endGame() {
+function endGame(reason) {
+    STATE.isPaused = true;
     const t = document.getElementById('toast');
-    document.getElementById('toast-message').innerText = "Waves: " + STATE.wave + " | VP: " + STATE.victoryPoints;
+    document.getElementById('toast-title').innerText = "GAME OVER";
+    document.getElementById('toast-message').innerText = reason + "\nWave: " + STATE.wave;
     document.getElementById('restart-btn').style.display='inline-block';
     t.classList.remove('hidden'); t.style.display='block';
 }
