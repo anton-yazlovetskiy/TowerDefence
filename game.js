@@ -36,7 +36,7 @@ const TOWERS_CONFIG = {
 };
 
 const STATE = {
-    lives: 12, money: 300, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0,
+    lives: 50, money: 300, victoryPoints: 0, wave: 1, theme: 'dark', cellSize: 0,
     grid: [], path: [], 
     towers: [], enemies: [], projectiles: [], particles: [],
     isWaveActive: false, enemiesToSpawn: 0, spawnTimer: 0,
