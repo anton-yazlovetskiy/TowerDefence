@@ -4,38 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maze Defence</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body class="theme-dark">
     <div class="game-wrapper">
         <header class="ui-header">
             <div class="header-content">
-                <div class="stat-group"><span class="stat-icon icon-heart">♥</span><span id="stat-lives">100</span></div>
-                <div class="stat-group spacer"><span class="stat-icon icon-cup">🏆</span><span id="stat-vp">0</span>/1k</div>
-
-                <div class="control-group spacer">
-                    <span class="ctrl-label">HP:</span>
-                    <button id="diff-minus" class="btn-tiny">-</button>
-                    <span id="diff-val" class="val-display">x1</span>
-                    <button id="diff-plus" class="btn-tiny">+</button>
-                </div>
-
-                <button id="btn-speed" class="btn-modern spacer">1x</button>
                 
-                <button id="btn-grid-size" class="btn-modern spacer">Map: 12x13</button>
+                <div class="header-section section-info">
+                    <div class="stat-group"><span class="stat-icon icon-heart">♥</span><span id="stat-lives">100</span></div>
+                    <div class="stat-group"><span class="stat-icon icon-cup">🏆</span><span id="stat-vp">0</span>/1k</div>
+                </div>
 
-                <div id="start-btn-container">
-                     <button id="btn-start" class="btn-modern btn-accent">Start!</button>
+                <div class="header-section section-settings">
+                    <div class="control-group">
+                        <button id="diff-minus" class="btn-tiny">-</button>
+                        <span id="diff-val" class="val-display">x1</span>
+                        <button id="diff-plus" class="btn-tiny">+</button>
+                    </div>
+                    <div class="settings-row">
+                        <button id="btn-speed" class="btn-modern btn-icon">1x</button>
+                        <button id="theme-toggle" class="btn-modern btn-icon">🌙</button>
+                    </div>
+                    <button id="btn-grid-size" class="btn-modern desktop-only">Map: 12x13</button>
                 </div>
-                <div class="toggle-wrapper">
-                    <span class="toggle-label">AUTO</span>
-                    <label class="switch">
-                        <input type="checkbox" id="chk-autostart">
-                        <span class="slider round"></span>
-                    </label>
+
+                <div class="header-section section-actions">
+                    <div class="actions-wrapper">
+                         <button id="btn-start" class="btn-modern btn-accent">Start!</button>
+                         <div class="actions-row">
+                             <button id="btn-pause" class="btn-modern btn-icon">⏸</button>
+                             <div class="toggle-wrapper">
+                                <span class="toggle-label">AUTO</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="chk-autostart">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                         </div>
+                    </div>
                 </div>
-                <button id="btn-pause" class="btn-modern btn-icon">⏸</button>
-                <button id="theme-toggle" class="btn-modern btn-icon">🌙</button>
+
             </div>
         </header>
 
@@ -49,38 +58,27 @@
             </div>
             
             <div id="monetization-toast" class="toast hidden monetization-overlay">
-                
                 <div class="monet-header">
                     <span class="stat-icon icon-heart">😢  ♥</span>
                     <span id="current-lives-display"></span>
                 </div>
-                
-                
                 <div id="monet-options-container" class="monet-options">
                     <a href="https://www.paypal.com/paypalme/yazAnton/1" target="_blank" class="btn-modern monet-btn" data-lives="25">
-                        <span class="coffee-icon">☕</span>
-                        <span class="coffee-label">1$</span>
-                        <span class="monet-reward">+25 HP</span>
+                        <span class="coffee-icon">☕</span><span class="coffee-label">1$</span><span class="monet-reward">+25 HP</span>
                     </a>
                     <a href="https://www.paypal.com/paypalme/yazAnton/2" target="_blank" class="btn-modern monet-btn" data-lives="50">
-                        <span class="coffee-icon">☕☕</span>
-                        <span class="coffee-label">2$</span>
-                        <span class="monet-reward">+50 HP</span>
+                        <span class="coffee-icon">☕☕</span><span class="coffee-label">2$</span><span class="monet-reward">+50 HP</span>
                     </a>
                     <a href="https://www.paypal.com/paypalme/yazAnton/3" target="_blank" class="btn-modern monet-btn" data-lives="100">
-                        <span class="coffee-icon">☕☕☕</span>
-                        <span class="coffee-label">3$</span>
-                        <span class="monet-reward">+100 HP</span>
+                        <span class="coffee-icon">☕☕☕</span><span class="coffee-label">3$</span><span class="monet-reward">+100 HP</span>
                     </a>
                 </div>
-                
                 <p id="monet-paid-message" class="hidden-on-paid" style="margin-top: 15px; font-size: 14px; color: #2ecc71;">
                     Thank you for your support! Click 'Continue' to restore HP and resume.
                 </p>
-                
                 <button id="btn-monet-continue" class="btn-modern btn-accent">Continue</button>
             </div>
-            </main>
+        </main>
 
         <aside class="ui-shop" id="shop-container">
             <div class="shop-header">
@@ -129,7 +127,7 @@
                         </div>
                     </div>
 
-                     <div class="tower-group">
+                    <div class="tower-group">
                         <div class="group-label">ICE</div>
                         <div class="tower-card" draggable="true" data-type="slow1">
                             <div class="tower-preview" id="preview-slow1"></div><span class="tower-cost"></span>
@@ -154,8 +152,9 @@
                             <div class="tower-preview" id="preview-regen3"></div><span class="tower-cost"></span>
                         </div>
                     </div>
+                    
                     <div class="tower-group skills-group">
-                        <div class="group-label">SKILLS</div>
+                        <div class="group-label desktop-only-label">SKILLS</div>
                         <button id="skill-airstrike" class="skill-btn" data-skill="airstrike">
                             <span class="skill-icon">✈️</span>
                             <span class="skill-count">2</span>

@@ -24,7 +24,7 @@ body.theme-light {
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
 body { background-color: var(--bg-color); color: var(--text-color); font-family: var(--font-main); overflow: hidden; height: 100vh; width: 100vw; }
 
-/* === DESKTOP LAYOUT === */
+/* === DESKTOP LAYOUT (DEFAULT) === */
 .game-wrapper {
     display: grid; height: 100%;
     grid-template-rows: 60px 1fr;
@@ -32,36 +32,36 @@ body { background-color: var(--bg-color); color: var(--text-color); font-family:
     grid-template-areas: "header header" "board shop";
 }
 
-/* HEADER */
+/* --- HEADER DESKTOP --- */
 .ui-header {
     grid-area: header; background: var(--panel-bg); border-bottom: var(--ui-border);
-    padding: 0 10px; font-size: 14px; font-weight: 600; z-index: 20;
+    padding: 0 15px; font-size: 14px; font-weight: 600; z-index: 20;
     overflow: hidden;
 }
 
 .header-content {
     display: flex; align-items: center; justify-content: space-between;
-    width: 100%; height: 100%; gap: 6px; padding-right: 10px;
+    width: 100%; height: 100%;
 }
 
-.stat-group, .btn-modern, .toggle-wrapper, .control-group { flex: 0 0 auto !important; }
+/* На десктопе секции просто стоят в ряд, разделители не нужны или делаются иначе */
+.header-section {
+    display: flex; align-items: center; gap: 15px;
+}
 
-.stat-group { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+.actions-wrapper { display: flex; align-items: center; gap: 15px; }
+
+.stat-group { display: flex; align-items: center; gap: 6px; font-size: 14px; }
 .stat-icon { font-size: 16px; }
 .icon-heart { color: #f43f5e; } .icon-cup { color: #f59e0b; }
-.spacer { margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; height: 24px; display: flex; align-items: center;}
 
-/* CONTROLS */
 .control-group { display: flex; align-items: center; gap: 4px; }
-.ctrl-label { font-size: 10px; color: var(--accent-color); font-weight: 800; margin-right: 2px; }
-.val-display { font-family: monospace; font-size: 14px; color: #2ecc71; min-width: 25px; text-align: center; }
-
 .btn-tiny {
     background: rgba(255,255,255,0.1); border: none; color: var(--text-color);
     width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-weight: bold;
 }
 .btn-tiny:hover { background: rgba(255,255,255,0.2); }
-.btn-tiny:active { transform: scale(0.95); }
+.val-display { font-family: monospace; font-size: 14px; color: #2ecc71; min-width: 30px; text-align: center; }
 
 .btn-modern {
     border: none; border-radius: 6px; padding: 6px 12px;
@@ -71,8 +71,6 @@ body { background-color: var(--bg-color); color: var(--text-color); font-family:
     white-space: nowrap; 
 }
 .btn-modern:hover { background: rgba(255,255,255,0.2); }
-.btn-modern:active { transform: translateY(1px); }
-.btn-modern:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-accent { background: var(--accent-color); color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
 .btn-icon { padding: 6px 10px; font-size: 16px; }
 
@@ -92,7 +90,7 @@ body { background-color: var(--bg-color); color: var(--text-color); font-family:
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(16px); }
 
-/* BOARD */
+/* --- BOARD --- */
 .game-board-container {
     grid-area: board; background: var(--board-bg);
     display: flex; justify-content: center; align-items: center; padding: 10px; overflow: hidden;
@@ -103,7 +101,7 @@ canvas {
     border: 3px solid var(--wall-color); background: var(--path-color); border-radius: 8px;
 }
 
-/* SHOP (General) */
+/* --- SHOP DESKTOP --- */
 .ui-shop {
     grid-area: shop; background: var(--panel-bg); border-left: var(--ui-border);
     display: flex; flex-direction: column; overflow: hidden; z-index: 20; 
@@ -111,50 +109,40 @@ canvas {
 }
 .shop-header {
     flex: 0 0 auto;
-    background: rgba(0,0,0,0.15); padding: 10px; border-bottom: var(--ui-border);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: rgba(0,0,0,0.15); padding: 15px; border-bottom: var(--ui-border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
 }
-.money-label { font-size: 9px; opacity: 0.6; letter-spacing: 1px; font-weight: bold; }
-.money-value { font-size: 20px; font-weight: 800; color: #2ecc71; font-family: monospace; }
-.shop-scroll-area { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px; }
-.shop-grid { display: flex; flex-direction: column; gap: 10px; }
+.money-label { font-size: 10px; opacity: 0.6; letter-spacing: 1px; font-weight: bold; }
+.money-value { font-size: 24px; font-weight: 800; color: #2ecc71; font-family: monospace; }
 
-/* TOWER GROUPS */
+.shop-scroll-area { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px; }
+.shop-grid { display: flex; flex-direction: column; gap: 10px; } /* Вертикальный список на десктопе */
+
+/* TOWER GROUPS (Desktop) */
 .tower-group {
-    background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px;
+    background: rgba(255,255,255,0.03); border-radius: 6px; padding: 10px;
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border: var(--ui-border);
 }
 .group-label {
     grid-column: span 3; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--accent-color); text-align: center; margin-bottom: 2px; font-weight: 800;
+    color: var(--accent-color); text-align: center; margin-bottom: 4px; font-weight: 800;
 }
+.desktop-only-label { display: block; } /* Показываем лейбл SKILLS на десктопе */
 
-/* --- TOWER CARD & COST --- */
 .tower-card {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 2px; cursor: grab; padding: 4px; border-radius: 4px; transition: all 0.2s;
-    width: 50px; flex: 0 0 auto !important;
-    position: relative; 
+    gap: 2px; cursor: grab; padding: 6px; border-radius: 4px; transition: all 0.2s;
+    width: 60px; height: 60px;
+    position: relative; margin: 0 auto;
 }
 .tower-card:hover { background: rgba(255,255,255,0.1); }
-.tower-card:active { transform: scale(0.95); cursor: grabbing; }
-
 .tower-cost { 
-    position: absolute; 
-    top: 0; right: 0;
-    background: rgba(0, 0, 0, 0.85);
-    color: #fff;
-    font-size: 9px; font-weight: 700; 
-    padding: 2px 4px;
-    border-radius: 0 4px 0 4px;
-    z-index: 5;
-    white-space: nowrap;
+    position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.85);
+    color: #fff; font-size: 9px; font-weight: 700; padding: 2px 4px; border-radius: 0 4px 0 4px; z-index: 5;
 }
+.tower-preview { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; }
+.tower-preview canvas { width: 40px; height: 40px; }
 
-.tower-preview { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-.tower-preview canvas { width: 32px; height: 32px; border: none; background: transparent; box-shadow: none; border-radius: 0; }
-
-/* AFFORDABILITY */
 .tower-card.cannot-afford { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
 .ui-shop.drag-over-delete::after {
     content: "SELL"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -163,7 +151,24 @@ canvas {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-/* GLOBAL TOASTS */
+/* SKILLS DESKTOP */
+.skills-group { display: flex; gap: 8px; justify-content: center; }
+.skill-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--accent-color);
+    border-radius: 6px; padding: 6px; cursor: pointer; color: var(--text-color);
+    transition: all 0.2s; width: 60px; height: 60px; position: relative;
+}
+.skill-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.2); transform: translateY(-1px); }
+.skill-btn:disabled { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: transparent; }
+.skill-icon { font-size: 20px; margin-bottom: 2px; }
+.skill-count {
+    position: absolute; top: 2px; right: 2px;
+    background: rgba(0,0,0,0.6); color: white;
+    font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: bold;
+}
+
+/* TOASTS & TUTORIAL */
 .toast {
     position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
     background: var(--panel-bg); padding: 15px 30px; border-radius: 12px;
@@ -172,16 +177,13 @@ canvas {
 }
 .toast.hidden { display: none; }
 
-/* TUTORIAL */
 #tutorial-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.7); z-index: 999;
     display: flex; justify-content: center; align-items: center;
     transition: opacity 0.3s;
 }
-/* ВАЖНО: Этот класс скрывает оверлей. Без него экран будет темным и некликабельным */
-#tutorial-overlay.hidden { display: none; opacity: 0; pointer-events: none; }
-
+#tutorial-overlay.hidden { display: none; pointer-events: none; }
 .tutorial-msg {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: var(--panel-bg); padding: 25px; border-radius: 12px;
@@ -190,66 +192,17 @@ canvas {
     max-width: 320px; width: 90%; z-index: 2000;
 }
 .tutorial-msg.hidden { display: none; }
-
 .tutorial-msg h3 { margin-bottom: 10px; color: var(--accent-color); }
 .tutorial-msg p { margin-bottom: 20px; font-size: 14px; line-height: 1.4; }
 .tutorial-close {
-    position: absolute; top: 5px; right: 5px;
-    background: transparent; border: none; color: #aaa;
+    position: absolute; top: 5px; right: 5px; background: transparent; border: none; color: #aaa;
     font-size: 24px; cursor: pointer; line-height: 1; padding: 5px 10px;
 }
-.tutorial-close:hover { color: white; }
-
 .tutorial-highlight {
-    z-index: 1000 !important;
-    position: relative;
+    z-index: 1000 !important; position: relative;
     box-shadow: 0 0 0 4px var(--accent-color), 0 0 50px rgba(0,0,0,1) !important;
-    background: var(--panel-bg);
-    border-radius: 8px;
-    transition: all 0.3s;
+    background: var(--panel-bg); border-radius: 8px; transition: all 0.3s;
 }
-#start-btn-container.tutorial-highlight { padding: 4px; margin: -4px; }
-/* Styles for tutorial highlights omitted for brevity */
-
-/* === SKILLS BUTTONS (GLOBAL STYLES) === */
-.skill-btn {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.05); border: 1px solid var(--accent-color);
-    border-radius: 6px; padding: 6px; cursor: pointer; color: var(--text-color);
-    transition: all 0.2s; min-height: 50px;
-    position: relative; overflow: hidden;
-    flex: 1; /* For mobile-skills-bar */
-}
-.skill-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.2); transform: translateY(-1px); }
-.skill-btn:active:not(:disabled) { transform: scale(0.95); }
-.skill-btn:disabled { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: transparent; }
-.skill-icon { font-size: 18px; margin-bottom: 2px; }
-.skill-label { font-size: 9px; font-weight: 800; text-transform: uppercase; }
-.skill-count {
-    position: absolute; top: 2px; right: 2px;
-    background: rgba(0,0,0,0.6); color: white;
-    font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: bold;
-}
-
-/* === MOBILE SKILLS BAR (NEW BLOCK) === */
-.mobile-skills-bar {
-    display: none; /* Hidden by default on desktop */
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 70px; /* Фиксированная высота */
-    background: var(--panel-bg);
-    border-top: var(--ui-border);
-    padding: 8px 10px;
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
-    z-index: 30;
-    gap: 10px;
-    justify-content: space-evenly;
-}
-
-/* === MONETIZATION STYLES === */
-/* Styles for monetization overlay omitted for brevity */
 
 /* =========================================
    MOBILE LAYOUT
@@ -259,67 +212,106 @@ canvas {
         grid-template-rows: auto 1fr auto; 
         grid-template-columns: 1fr;
         grid-template-areas: "header" "board" "shop";
-        /* Уменьшаем высоту для учета нового бара навыков */
-        height: calc(100% - 70px);
+        height: 100%; overflow: hidden;
     }
 
-    /* Делаем mobile-skills-bar видимым */
-    .mobile-skills-bar {
-        display: flex; 
+    /* HEADER: 3 COLUMNS */
+    .ui-header { 
+        padding: 0; height: auto; 
+        background: var(--panel-bg); border-bottom: var(--ui-border); 
     }
-
-    /* Header adjustments omitted for brevity */
-
-    /* SHOP */
-    .ui-shop { 
-        /* Убедимся, что shop не перекрывает skills bar */
-        max-height: 35vh;
-        border-left: none; border-top: var(--ui-border);
-    }
-    .shop-header { 
-        width: 100%; height: 32px; 
-        border-bottom: var(--ui-border); 
-        flex-direction: row; justify-content: center; gap: 10px; padding: 0;
-    }
-    .shop-scroll-area { padding: 6px; overflow-y: scroll; }
-    /* SHOP GRID: 2 Columns layout */
-    .shop-grid { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 6px; width: 100%;
-    }
-    
-    /* TOWER GROUPS */
-    .tower-group { 
-        display: flex; justify-content: space-evenly; align-items: center;
-        gap: 2px; padding: 6px; height: auto; min-height: 50px;
-        flex-wrap: wrap; 
-    }
-    
-    /* SKILLS GROUP SPECIFIC */
-    .skills-group {
-        display: flex; gap: 4px; padding: 4px;
-    }
-    .skills-group .group-label { display: none; } /* Скрываем надпись на мобильном для компактности */
-    
-    .skills-group .skill-btn {
-        flex: 1; height: 100%; min-height: 44px;
-        font-size: 14px; border-radius: 4px;
+    .header-content {
+        display: grid;
+        grid-template-columns: 0.8fr 1fr 1fr; /* Левая колонка чуть уже */
+        width: 100%; height: 100%;
         padding: 0; margin: 0;
     }
-    .skills-group .skill-icon { font-size: 16px; margin-bottom: 0; }
-    .skills-group .skill-label { display: none; } /* Убираем текст AIR/ICE для компактности */
-    .skills-group .skill-count { top: 1px; right: 1px; font-size: 8px; padding: 1px 3px; }
 
-    /* Остальные стили (group-label, tower-card и т.д.) оставляем как были */
-    .group-label { display: none; } 
-    .tower-card { width: 44px; padding: 4px; height: 44px; } 
-    .tower-preview { width: 100%; height: 100%; }
-    .tower-preview canvas { width: 36px; height: 36px; } 
-    .tower-cost { font-size: 8px; padding: 1px 3px; }
-    .group-label { display: none; } 
-    .tower-card { width: 44px; padding: 4px; height: 44px; } 
-    .tower-preview { width: 100%; height: 100%; }
-    .tower-preview canvas { width: 36px; height: 36px; } 
-    .tower-cost { font-size: 8px; padding: 1px 3px; }
+    /* General Section Style */
+    .header-section {
+        display: flex; flex-direction: column; justify-content: center; 
+        padding: 6px 4px; gap: 4px; position: relative;
+    }
+    /* Vertical Dividers */
+    .header-section:not(:last-child):after {
+        content: ""; position: absolute; right: 0; top: 15%; height: 70%; width: 1px;
+        background: rgba(255,255,255,0.1);
+    }
+
+    /* COL 1: INFO (Left Aligned) */
+    .section-info { 
+        align-items: flex-start; /* Прижимаем влево */
+        padding-left: 10px;      /* Отступ от края экрана */
+        gap: 2px;
+    }
+    .stat-group { font-size: 12px; font-weight: 800; }
+    .stat-icon { font-size: 14px; width: 18px; text-align: center; display: inline-block; }
+
+    /* COL 2: SETTINGS (Centered) */
+    .section-settings { align-items: center; }
+    .control-group { margin: 0; }
+    .btn-tiny { width: 24px; height: 24px; }
+    .val-display { font-size: 13px; min-width: 24px; }
+    
+    .settings-row {
+        display: flex; gap: 8px; justify-content: center; width: 100%;
+    }
+    .desktop-only { display: none; }
+
+    /* COL 3: ACTIONS (Right/Center) */
+    .section-actions { align-items: center; padding-right: 6px; }
+    .actions-wrapper {
+        display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%;
+    }
+    
+    #btn-start { 
+        width: 100%; font-size: 12px; height: 28px; padding: 0; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .actions-row {
+        display: flex; align-items: center; justify-content: space-between; 
+        width: 100%; gap: 6px;
+    }
+    
+    /* Кнопка паузы теперь компактная */
+    #btn-pause { 
+        width: auto; flex: 0 0 auto; aspect-ratio: 1/1; height: 26px; 
+        padding: 0 8px; 
+    }
+    
+    .toggle-wrapper { gap: 4px; margin-left: auto; margin-right: auto; }
+    .toggle-label { display: none; }
+    .switch { width: 32px; height: 18px; }
+    .slider:before { height: 14px; width: 14px; left: 2px; bottom: 2px; }
+    input:checked + .slider:before { transform: translateX(14px); }
+
+    /* SHOP (Keep as is) */
+    .mobile-skills-bar { display: none !important; }
+    .ui-shop { 
+        height: auto; max-height: 35vh; 
+        border-left: none; border-top: var(--ui-border);
+        background: var(--panel-bg);
+    }
+    .shop-header { 
+        height: 28px; padding: 0; border-bottom: var(--ui-border); 
+        flex-direction: row; gap: 10px; font-size: 10px;
+    }
+    .money-label { font-size: 9px; } .money-value { font-size: 16px; }
+    .shop-scroll-area { padding: 4px; overflow-y: auto; }
+    .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 100%; }
+    .tower-group { 
+        display: flex; justify-content: space-evenly; align-items: center; 
+        gap: 2px; padding: 2px; height: 48px; min-height: 48px;
+        background: rgba(255,255,255,0.02);
+        grid-template-columns: none; border: none;
+    }
+    .group-label, .desktop-only-label { display: none; } 
+    .tower-card { width: 40px; height: 40px; padding: 2px; margin: 0; }
+    .tower-preview canvas { width: 32px; height: 32px; }
+    .tower-cost { font-size: 8px; padding: 1px 2px; bottom: -2px; top: auto; right: -2px; }
+    .skills-group { display: flex; gap: 4px; padding: 2px; background: transparent !important; }
+    .skill-btn { flex: 1; height: 100%; margin: 0; border-radius: 4px; background: rgba(255,255,255,0.05); width: auto; }
+    .skill-icon { font-size: 18px; margin: 0; }
+    .skill-count { top: 2px; right: 2px; font-size: 8px; }
 }
