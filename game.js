@@ -8,31 +8,37 @@ let CONFIG = {
 
 const PALETTE = {
     radar: '#2ecc71', blaster: '#f39c12', sniper: '#e74c3c', slow: '#3498db',
+    regen: '#ff7979', // Pink
     tank: '#9b59b6', shooter: '#e84393', normal: '#f1c40f',
     laser: '#00ff00', enemyProj: '#ff0000'
 };
 
 /* TUNING */
 const TOWERS_CONFIG = {
-    // RADAR (Machine Gun) - Green
+    // RADAR (Machine Gun)
     radar1: { baseType: 'radar', tier: 1, color: PALETTE.radar, radius: 1.5, damage: 10,  speed: 1000, cost: 50,  cd: 6, hp: 150 }, 
     radar2: { baseType: 'radar', tier: 2, color: PALETTE.radar, radius: 3.5, damage: 20,  speed: 1000, cost: 250, cd: 12, hp: 300 },
     radar3: { baseType: 'radar', tier: 3, color: PALETTE.radar, radius: 5.5, damage: 70, speed: 1000, cost: 400, cd: 60, hp: 600 },
     
-    // BLASTER (Cannon) - Orange
+    // BLASTER (Cannon)
     blaster1: { baseType: 'blaster', tier: 1, color: PALETTE.blaster, radius: 1.5, damage: 20,  speed: 1000, cost: 100, cd: 25, hp: 200 },
     blaster2: { baseType: 'blaster', tier: 2, color: PALETTE.blaster, radius: 3.5, damage: 60,  speed: 1000, cost: 300, cd: 35, hp: 400 },
     blaster3: { baseType: 'blaster', tier: 3, color: PALETTE.blaster, radius: 5.5, damage: 700, speed: 1000, cost: 700, cd: 80, hp: 800 },
     
-    // SNIPER (Triangle) - Red
+    // SNIPER
     sniper1: { baseType: 'sniper', tier: 1, color: PALETTE.sniper, radius: 1.5, damage: 50,  speed: 1200, cost: 150,  cd: 55, hp: 100 },
     sniper2: { baseType: 'sniper', tier: 2, color: PALETTE.sniper, radius: 3.5, damage: 150, speed: 1500, cost: 450,  cd: 90,  hp: 200 },
     sniper3: { baseType: 'sniper', tier: 3, color: PALETTE.sniper, radius: 12.5, damage: 2000, speed: 2000, cost: 1000, cd: 140, hp: 400 },
     
-    // SLOW (Hexagon) - Blue
+    // SLOW
     slow1: { baseType: 'slow', tier: 1, color: PALETTE.slow, radius: 1.5, damage: 2, speed: 1000, cost: 100, cd: 20, hp: 200, slow: 0.85 },
     slow2: { baseType: 'slow', tier: 2, color: PALETTE.slow, radius: 3.5, damage: 5, speed: 1000, cost: 350, cd: 20, hp: 400, slow: 0.70 },
-    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 5.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.50 }
+    slow3: { baseType: 'slow', tier: 3, color: PALETTE.slow, radius: 5.5, damage: 15, speed: 1000, cost: 600, cd: 40, hp: 800, slow: 0.50 },
+
+    // REGENERATOR (Updated Radii: 1.5, 3.5, 5.5)
+    regen1: { baseType: 'regen', tier: 1, color: PALETTE.regen, radius: 1.5, damage: 0, speed: 0, cost: 200, cd: 5, hp: 150, heal: 0.5 },
+    regen2: { baseType: 'regen', tier: 2, color: PALETTE.regen, radius: 3.5, damage: 0, speed: 0, cost: 900, cd: 5, hp: 300, heal: 1.5 },
+    regen3: { baseType: 'regen', tier: 3, color: PALETTE.regen, radius: 5.5, damage: 0, speed: 0, cost: 1900, cd: 5, hp: 600, heal: 4.0 }
 };
 
 const STATE = {
@@ -46,7 +52,9 @@ const STATE = {
     gameSpeed: 1, 
     gridSize: 'normal',
     skipTutorial: false,
-    monetizationShown: false 
+    monetizationShown: false,
+    // Skills State (skillMode убран, так как действие мгновенное)
+    skills: { airstrike: 2, freeze: 2 }
 };
 
 function getCSSVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
@@ -91,6 +99,7 @@ class Enemy {
         this.baseSpeed = 0.06 + (wave * 0.003); 
         this.attackCooldown = 0; this.attackRange = 3.5; this.attackDmg = 5 + wave;
         this.hitSlowTimer = 0; 
+        this.freezeTimer = 0; // New Freeze logic
 
         if (STATE.path && STATE.path.length > 0) {
             const p = STATE.path[0]; this.x = p.x; this.y = p.y;
@@ -101,9 +110,16 @@ class Enemy {
 
     update() {
         if (!this.alive) return;
+        
+        // FREEZE CHECK
+        if (this.freezeTimer > 0) {
+            this.freezeTimer--;
+            return; // Completely stopped
+        }
+
         let currentSpeed = this.baseSpeed;
         
-        // 1. Замедление от Ледяных башен (Складывается умножением)
+        // 1. Slow Towers
         let slowFactor = 1.0;
         STATE.towers.forEach(t => {
             if (t.stats.slow > 0) {
@@ -151,10 +167,9 @@ class Enemy {
         STATE.lives--; 
         updateUI();
         
-        // CRITICAL HP CHECK: Trigger only when lives hit exactly 10 and hasn't been shown yet.
-        if (STATE.lives === 10 && !STATE.monetizationShown) {
+        // CRITICAL HP CHECK: Trigger ONCE when lives drop to or below 10
+        if (STATE.lives <= 10 && STATE.lives > 0 && !STATE.monetizationShown) {
              showMonetizationModal();
-             return;
         }
 
         if (STATE.lives <= 0) { this.alive = false; endGame("Base Destroyed!"); return; }
@@ -181,6 +196,14 @@ class Enemy {
 
     drawIcon(ctx, cs, cx, cy, radius) {
         ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 2; ctx.beginPath();
+        
+        // Frozen visual
+        if (this.freezeTimer > 0) {
+             ctx.fillStyle = "rgba(52, 152, 219, 0.5)";
+             ctx.arc(cx, cy, radius * 0.8, 0, Math.PI*2);
+             ctx.fill();
+        }
+
         if (this.type === 'tank') {
             const r = radius * 0.5; ctx.moveTo(cx - r, cy - r); ctx.lineTo(cx + r, cy - r);
             ctx.bezierCurveTo(cx + r, cy, cx, cy + r, cx, cy + r); ctx.bezierCurveTo(cx, cy + r, cx - r, cy, cx - r, cy - r); ctx.stroke();
@@ -268,6 +291,22 @@ class Tower {
         this.cooldownTimer = 0; this.rotation = 0;
     }
     update() {
+        // REGEN LOGIC
+        if (this.stats.baseType === 'regen') {
+            // Лечим каждый кадр по чуть-чуть
+            STATE.towers.forEach(t => {
+                if (t === this || t.hp >= t.maxHp) return;
+                const dist = Math.sqrt((t.x - this.x)**2 + (t.y - this.y)**2);
+                if (dist <= this.stats.radius) {
+                    t.hp = Math.min(t.maxHp, t.hp + this.stats.heal);
+                }
+            });
+            // Вращение креста
+            this.rotation += 0.02;
+            return; 
+        }
+
+        // STANDARD SHOOTING LOGIC
         if (this.cooldownTimer > 0) this.cooldownTimer--;
         const target = this.findTarget();
         if (target) {
@@ -298,48 +337,34 @@ class Tower {
     draw(ctx, cs, isIcon = false) {
         const cx = isIcon ? cs/2 : (this.x + 0.5) * cs; const cy = isIcon ? cs/2 : (this.y + 0.5) * cs;
         const base = this.stats.baseType; const tier = this.stats.tier; const color = this.stats.color;
-        const size = cs * 0.7; // 70% of cell
+        const size = cs * 0.7; 
         
         ctx.save(); ctx.translate(cx, cy);
 
-        // 1. RADAR (CIRCLE + RECT)
         if (base === 'radar') {
             if(!isIcon) ctx.rotate(this.rotation); else ctx.rotate(-Math.PI/4);
-            // Base
             ctx.fillStyle = '#34495e'; ctx.beginPath(); ctx.arc(0, 0, size*0.4, 0, Math.PI*2); ctx.fill();
-            // Barrel
             ctx.fillStyle = color; 
-            // Multi-barrel for tiers
             if (tier === 1) ctx.fillRect(0, -size*0.1, size*0.5, size*0.2);
             else if (tier === 2) { ctx.fillRect(0, -size*0.15, size*0.5, size*0.1); ctx.fillRect(0, size*0.05, size*0.5, size*0.1); }
             else { ctx.fillRect(0, -size*0.2, size*0.6, size*0.4); }
         } 
-        
-        // 2. BLASTER (SQUARE)
         else if (base === 'blaster') {
             if(!isIcon) ctx.rotate(this.rotation); else ctx.rotate(-Math.PI/4);
             ctx.fillStyle = '#2c3e50'; ctx.fillRect(-size*0.35, -size*0.35, size*0.7, size*0.7);
             ctx.fillStyle = color; 
-            // Inner core
             const core = size * (0.2 + tier * 0.1);
             ctx.fillRect(-core/2, -core/2, core, core);
-            // Barrel
             ctx.fillStyle = '#7f8c8d'; ctx.fillRect(0, -size*0.1, size*0.5, size*0.2);
         }
-        
-        // 3. SNIPER (TRIANGLE)
         else if (base === 'sniper') {
             if(!isIcon) ctx.rotate(this.rotation); else ctx.rotate(-Math.PI/4);
             ctx.fillStyle = '#2c3e50'; 
             ctx.beginPath(); ctx.moveTo(size*0.4, 0); ctx.lineTo(-size*0.3, size*0.3); ctx.lineTo(-size*0.3, -size*0.3); ctx.fill();
-            // Long Barrel
             ctx.strokeStyle = color; ctx.lineWidth = 2 + tier; 
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(size*0.6, 0); ctx.stroke();
-            // Center Dot
             ctx.fillStyle = color; ctx.beginPath(); ctx.arc(0, 0, size*0.15, 0, Math.PI*2); ctx.fill();
         }
-        
-        // 4. SLOW (HEXAGON)
         else if (base === 'slow') {
             ctx.fillStyle = color;
             ctx.beginPath(); 
@@ -348,16 +373,31 @@ class Tower {
                 ctx.lineTo(size*0.4 * Math.cos(angle), size*0.4 * Math.sin(angle));
             }
             ctx.closePath(); ctx.fill();
-            
-            // Pulse effect
             const pulse = isIcon ? 0 : (Math.sin(Date.now() / 200) + 1) * 0.5 * size * 0.1;
             ctx.strokeStyle = "white"; ctx.lineWidth = tier; 
             ctx.beginPath(); ctx.arc(0, 0, size*0.15 + pulse, 0, Math.PI*2); ctx.stroke();
         }
+        // REGEN VISUAL
+        else if (base === 'regen') {
+            if(!isIcon) ctx.rotate(this.rotation);
+            ctx.fillStyle = '#ecf0f1'; // White base
+            ctx.beginPath(); ctx.arc(0,0, size*0.35, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = color; // Pink cross
+            const w = size * 0.15; const l = size * 0.5;
+            ctx.fillRect(-l/2, -w/2, l, w); // Horz
+            ctx.fillRect(-w/2, -l/2, w, l); // Vert
+            
+            // Tier indication (ring around)
+            if (tier > 1) {
+                ctx.strokeStyle = color; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(0,0, size*0.45, 0, Math.PI*2); ctx.stroke();
+            }
+        }
 
         ctx.restore();
 
-        // Level Dots (Only on board, not icons)
+        // Level Dots (Only on board)
         if (!isIcon) {
             ctx.fillStyle = "white";
             const dotY = cy + size*0.4; const dotSize = cs*0.06; const spacing = cs*0.12;
@@ -372,7 +412,7 @@ class Tower {
 }
 
 /* =========================================
-   UTILITIES (NEW)
+   UTILITIES
    ========================================= */
 
 function unpauseGame() {
@@ -420,6 +460,40 @@ function handleMonetizationPayment(lives) {
     showToast(`HP Restored! Received +${lives} lives! Thank you for your support!`);
 }
 
+function executeSkill(x, y) {
+    if (STATE.skillMode === 'airstrike') {
+        if (STATE.skills.airstrike > 0) {
+            STATE.skills.airstrike--;
+            // Effect: Damage in radius 3.5
+            const range = 3.5;
+            let hits = 0;
+            STATE.enemies.forEach(e => {
+                 const dist = Math.sqrt((e.x - x)**2 + (e.y - y)**2);
+                 if (dist <= range) {
+                     e.takeDamage(500);
+                     hits++;
+                 }
+            });
+            // Visual
+            for(let i=0; i<15; i++) STATE.particles.push(new Particle(x, y, '#e74c3c'));
+            showToast(`BOOM! ${hits} enemies hit!`);
+        }
+    } else if (STATE.skillMode === 'freeze') {
+        if (STATE.skills.freeze > 0) {
+            STATE.skills.freeze--;
+            // Effect: Freeze all enemies
+            STATE.enemies.forEach(e => {
+                e.freezeTimer = 300; // 5 seconds at 60fps (roughly)
+            });
+            showToast("FREEZE! Enemies stopped.");
+        }
+    }
+    
+    STATE.skillMode = null;
+    updateUI();
+}
+
+
 /* =========================================
    INPUT & INIT
    ========================================= */
@@ -428,10 +502,59 @@ class InputHandler {
         this.setupShop(); 
         this.setupCanvas();
         this.setupControls();
+        this.setupSkills(); // New
         this.shopElement = document.querySelector('.ui-shop');
         this.setupMonetizationControls(); 
     }
     
+    setupSkills() {
+        const btnAir = document.getElementById('skill-airstrike');
+        const btnFreeze = document.getElementById('skill-freeze');
+        
+        // IMMEDIATE ACTION: AIRSTRIKE (Global Damage)
+        if(btnAir) btnAir.addEventListener('click', () => {
+            if (STATE.skills.airstrike > 0) {
+                STATE.skills.airstrike--;
+                
+                // Наносим урон ВСЕМ врагам на карте
+                let count = 0;
+                STATE.enemies.forEach(e => {
+                    e.takeDamage(500); // Мощный урон
+                    // Визуальный эффект взрыва на враге
+                    for(let i=0; i<10; i++) STATE.particles.push(new Particle(e.x, e.y, '#e74c3c'));
+                    count++;
+                });
+                
+                showToast(`AIR RAID: ${count} enemies hit!`);
+                updateUI();
+                
+                // Тряска экрана (опционально, просто сдвиг канваса на пару пикселей)
+                const cvs = document.getElementById('gameCanvas');
+                cvs.style.transform = "translate(2px, 2px)";
+                setTimeout(() => cvs.style.transform = "none", 50);
+            } else {
+                showToast("No Airstrikes left!");
+            }
+        });
+
+        // IMMEDIATE ACTION: FREEZE (Global Stun)
+        if(btnFreeze) btnFreeze.addEventListener('click', () => {
+            if (STATE.skills.freeze > 0) {
+                STATE.skills.freeze--;
+                
+                // Замораживаем ВСЕХ врагов
+                STATE.enemies.forEach(e => {
+                    e.freezeTimer = 300; // 5 секунд (при 60fps)
+                });
+                
+                showToast("GLOBAL FREEZE! (5s)");
+                updateUI();
+            } else {
+                showToast("No Freeze charges left!");
+            }
+        });
+    }
+
     setupControls() {
         const autostart = document.getElementById('chk-autostart');
         if (autostart) {
@@ -473,9 +596,7 @@ class InputHandler {
         document.querySelectorAll('.monet-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const lives = parseInt(e.currentTarget.dataset.lives);
-                // We grant lives and update the UI *before* the browser navigates to the PayPal link
                 handleMonetizationPayment(lives);
-                // The actual PayPal link opening is handled by the <a> tag's default behavior (target="_blank")
             });
         });
     }
@@ -487,6 +608,8 @@ class InputHandler {
     }
 
     toggleGridSize() {
+        if (STATE.isWaveActive) return; 
+        
         if (STATE.gridSize === 'normal') {
             STATE.gridSize = 'huge';
             CONFIG.cols = 24; CONFIG.rows = 26;
@@ -515,7 +638,6 @@ class InputHandler {
         items.forEach(item => {
             const type = item.dataset.type;
             
-            // Check affordability using dynamic data-cost (which is set in generateShopIcons)
             item.addEventListener('dragstart', (e) => { 
                 const currentCost = parseInt(item.dataset.cost);
                 if (STATE.money < currentCost) { 
@@ -553,7 +675,45 @@ class InputHandler {
         const cvs = document.getElementById('gameCanvas');
         if(!cvs) return;
         
-        cvs.addEventListener('click', (e) => { const pos = this.getMouseGridPos(e); if(!pos)return; STATE.selectedTower = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y) || null; });
+        // CLICK HANDLER (Context Menu & Skills)
+        cvs.addEventListener('click', (e) => { 
+            const pos = this.getMouseGridPos(e); 
+
+            // 2. Context Menu Click Check
+            if (STATE.selectedTower) {
+                // Calculate click position relative to canvas
+                const r = canvas.getBoundingClientRect();
+                const mx = e.clientX - r.left;
+                const my = e.clientY - r.top;
+                const cs = STATE.cellSize;
+                
+                const tx = (STATE.selectedTower.x + 0.5) * cs;
+                const ty = (STATE.selectedTower.y + 0.5) * cs;
+                const btnOffset = cs * 0.8;
+                const btnRadius = cs * 0.35;
+
+                // Check Sell (Left)
+                const sellX = tx - btnOffset; const sellY = ty;
+                if (Math.hypot(mx - sellX, my - sellY) < btnRadius) {
+                    this.sellTower(STATE.selectedTower.x, STATE.selectedTower.y);
+                    return;
+                }
+                
+                // Check Upgrade (Right)
+                const upgX = tx + btnOffset; const upgY = ty;
+                if (Math.hypot(mx - upgX, my - upgY) < btnRadius) {
+                    this.upgradeTower(STATE.selectedTower);
+                    return;
+                }
+            }
+            
+            // 3. Select Tower
+            if(!pos) return; 
+            const clickedTower = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y);
+            STATE.selectedTower = clickedTower || null;
+            updateUI();
+        });
+
         cvs.addEventListener('dragover', (e) => { e.preventDefault(); const pos = this.getMouseGridPos(e); if(pos) STATE.hoverPos = pos; });
         cvs.addEventListener('dragleave', () => STATE.hoverPos = null);
         cvs.addEventListener('drop', (e) => { e.preventDefault(); STATE.hoverPos = null; const pos = this.getMouseGridPos(e); if(!pos) return; try{ const d=JSON.parse(e.dataTransfer.getData('text/plain')); if(d.source==='shop') this.buildTower(pos.x, pos.y, d.type, d.cost); }catch(e){} });
@@ -564,8 +724,32 @@ class InputHandler {
         
         // TOUCH EVENTS (Mobile)
         cvs.addEventListener('touchstart', (e) => { 
-            const t = e.touches[0]; const pos = this.getTouchGridPos(t.clientX, t.clientY); 
+            const t = e.touches[0]; 
+            
+            // Handle Context Menu Tap on Mobile
+            if (STATE.selectedTower) {
+                const r = canvas.getBoundingClientRect();
+                const mx = t.clientX - r.left;
+                const my = t.clientY - r.top;
+                const cs = STATE.cellSize;
+                const tx = (STATE.selectedTower.x + 0.5) * cs;
+                const ty = (STATE.selectedTower.y + 0.5) * cs;
+                const btnOffset = cs * 0.8;
+                const btnRadius = cs * 0.35;
+                
+                if (Math.hypot(mx - (tx - btnOffset), my - ty) < btnRadius) {
+                    this.sellTower(STATE.selectedTower.x, STATE.selectedTower.y);
+                    return;
+                }
+                if (Math.hypot(mx - (tx + btnOffset), my - ty) < btnRadius) {
+                    this.upgradeTower(STATE.selectedTower);
+                    return;
+                }
+            }
+
+            const pos = this.getTouchGridPos(t.clientX, t.clientY); 
             if(!pos) return; 
+
             const tower = STATE.towers.find(t=>t.x===pos.x && t.y===pos.y); 
             if(tower) { 
                 STATE.selectedTower = tower; 
@@ -573,6 +757,7 @@ class InputHandler {
             } else {
                 STATE.selectedTower = null;
             }
+            updateUI();
         }, {passive:false});
         
         cvs.addEventListener('touchmove', (e) => {
@@ -609,18 +794,47 @@ class InputHandler {
         if (!STATE.grid[y] || STATE.grid[y][x] !== 1) return showToast("Только на стене!");
         const existing = STATE.towers.find(t => t.x === x && t.y === y);
         if (existing) {
-            if (existing.stats.baseType === TOWERS_CONFIG[type].baseType) {
-                if (TOWERS_CONFIG[type].tier > existing.stats.tier) {
-                    const upgradeCost = cost - existing.stats.cost; 
-                    if (STATE.money >= upgradeCost) {
-                        STATE.money -= upgradeCost; STATE.towers = STATE.towers.filter(t => t !== existing); STATE.towers.push(new Tower(x, y, type)); updateUI(); return;
-                    } else return showToast("Не хватает денег!");
-                }
-            }
-            return showToast("Место занято!");
+             // Upgrade Logic in Build is tricky with drag drop, keeping it simple or reuse upgrade logic
+             // But existing drag-to-upgrade logic is fine
+             if (existing.stats.baseType === TOWERS_CONFIG[type].baseType) {
+                 this.upgradeTower(existing, type, cost);
+                 return;
+             }
+             return showToast("Место занято!");
         }
         if (STATE.money >= cost) { STATE.money -= cost; STATE.towers.push(new Tower(x, y, type)); updateUI(); }
     }
+
+    upgradeTower(existing, specificType = null, specificCost = null) {
+        // Find next tier
+        const base = existing.stats.baseType;
+        const currentTier = existing.stats.tier;
+        const nextTier = currentTier + 1;
+        
+        if (nextTier > 3) { showToast("Max Level!"); return; }
+
+        const nextTypeKey = base + nextTier;
+        const nextConfig = TOWERS_CONFIG[nextTypeKey];
+        
+        if (!nextConfig) return;
+
+        const upgradeCost = nextConfig.cost - existing.stats.cost;
+
+        if (STATE.money >= upgradeCost) {
+            STATE.money -= upgradeCost; 
+            // Replace tower
+            const idx = STATE.towers.indexOf(existing);
+            if (idx !== -1) {
+                STATE.towers[idx] = new Tower(existing.x, existing.y, nextTypeKey);
+                // Keep selection if upgrading via menu
+                STATE.selectedTower = STATE.towers[idx];
+            }
+            updateUI();
+        } else {
+            showToast(`Need ${upgradeCost}$`);
+        }
+    }
+
     sellTower(x, y) {
         const idx = STATE.towers.findIndex(t => t.x === x && t.y === y);
         if (idx !== -1) { const t = STATE.towers[idx]; STATE.money += Math.floor(t.stats.cost * 0.7); STATE.towers.splice(idx, 1); if (STATE.selectedTower === t) STATE.selectedTower = null; updateUI(); showToast("Продано!"); }
@@ -654,7 +868,6 @@ function generateShopIcons() {
         const container = document.getElementById(`preview-${key}`);
         if (!container) return;
         
-        // DYNAMICALLY SET COST IN CARD ATTRIBUTES AND TEXT
         const card = container.closest('.tower-card');
         if (card) {
             card.dataset.cost = config.cost;
@@ -665,13 +878,26 @@ function generateShopIcons() {
         }
         
         const tempCvs = document.createElement('canvas');
-        tempCvs.width = 40; tempCvs.height = 40; // Small clean size
+        tempCvs.width = 40; tempCvs.height = 40; 
         const tempCtx = tempCvs.getContext('2d');
         const mockTower = new Tower(0,0, key);
         mockTower.draw(tempCtx, 40, true);
         container.innerHTML = ''; container.appendChild(tempCvs);
     });
 }
+
+function updateMapControlsState() {
+    const btnGrid = document.getElementById('btn-grid-size');
+    const btnMinus = document.getElementById('diff-minus');
+    const btnPlus = document.getElementById('diff-plus');
+
+    const disabled = STATE.isWaveActive;
+
+    if (btnGrid) btnGrid.disabled = disabled;
+    if (btnMinus) btnMinus.disabled = disabled;
+    if (btnPlus) btnPlus.disabled = disabled;
+}
+
 
 function startWave() {
     if (STATE.isWaveActive) return;
@@ -680,12 +906,27 @@ function startWave() {
     STATE.spawnTimer = 0;
     const btn = document.getElementById('btn-start');
     if(btn) { btn.disabled = true; btn.innerText = "Level " + STATE.wave; }
+    
+    updateMapControlsState(); 
 }
+
 function endWave() {
-    STATE.isWaveActive = false; STATE.wave++; updateUI();
+    STATE.isWaveActive = false; 
+    
+    // ЛОГИКА ПОВЫШЕНИЯ МНОЖИТЕЛЯ HP ВРАГОВ (каждые 5 раундов)
+    if (STATE.wave > 0 && STATE.wave % 5 === 0) {
+        STATE.diffMultiplier++;
+        const disp = document.getElementById('diff-val');
+        if(disp) disp.innerText = 'x' + STATE.diffMultiplier;
+        showToast("Difficulty Increased!");
+    }
+    
+    STATE.wave++; updateUI();
     const btn = document.getElementById('btn-start');
     if(btn) { btn.disabled = false; btn.innerText = "Start!"; }
     
+    updateMapControlsState();
+
     // BANKRUPTCY CHECK
     if (STATE.money < 50 && STATE.towers.length === 0) {
         endGame("No Money & No Towers!");
@@ -694,6 +935,7 @@ function endWave() {
 
     if (STATE.autoStart) setTimeout(startWave, 1000);
 }
+
 function checkWin() {
     if (STATE.victoryPoints >= 1000) { 
         STATE.isPaused = true; 
@@ -705,9 +947,9 @@ function checkWin() {
 function update() {
     if (STATE.isPaused || STATE.lives <= 0) return;
     
-    // Check if we missed the monetization trigger in teleportLoop
     if (STATE.lives <= 10 && STATE.lives > 0 && !STATE.monetizationShown) {
          showMonetizationModal();
+         return; 
     }
 
     if (STATE.isWaveActive && STATE.enemiesToSpawn > 0) {
@@ -758,6 +1000,10 @@ function handleResize() {
 }
 function drawCircularHP(ctx, x, y, radius, pct, color) { ctx.beginPath(); ctx.arc(x, y, radius, -Math.PI/2, -Math.PI/2 + (Math.PI * 2 * pct)); ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.stroke(); }
 
+// --- OFFSCREEN CANVAS FOR RANGES ---
+const rangeCanvas = document.createElement('canvas');
+const rangeCtx = rangeCanvas.getContext('2d');
+
 function draw() {
     const cs = STATE.cellSize; if (!cs || !ctx) return;
     if (!STATE.grid || STATE.grid.length !== CONFIG.rows) return;
@@ -765,12 +1011,15 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const wallColor = getCSSVar('--wall-color'); const pathColor = getCSSVar('--path-color');
     
+    // 1. Grid
     for (let y = 0; y < CONFIG.rows; y++) {
         for (let x = 0; x < CONFIG.cols; x++) {
             if (STATE.grid[y] && STATE.grid[y][x] === 1) { ctx.fillStyle = wallColor; ctx.fillRect(x*cs+1, y*cs+1, cs-2, cs-2); }
             else { ctx.fillStyle = pathColor; ctx.fillRect(x*cs, y*cs, cs, cs); }
         }
     }
+    
+    // 2. Path
     if (STATE.path.length > 0) {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; ctx.lineWidth = cs * 0.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
         ctx.beginPath(); STATE.path.forEach((p, i) => { const px = (p.x + 0.5) * cs; const py = (p.y + 0.5) * cs; if (i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }); ctx.stroke();
@@ -779,14 +1028,45 @@ function draw() {
     ctx.fillStyle = 'rgba(46, 204, 113, 0.2)'; ctx.beginPath(); ctx.arc((s.x+0.5)*cs, (s.y+0.5)*cs, cs*0.3, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = 'rgba(231, 76, 60, 0.2)'; ctx.beginPath(); ctx.arc((e.x+0.5)*cs, (e.y+0.5)*cs, cs*0.3, 0, Math.PI*2); ctx.fill();
 
+    // 3. TOWER RANGES (ИСПРАВЛЕННАЯ ЗАЛИВКА)
+    if (rangeCanvas.width !== canvas.width || rangeCanvas.height !== canvas.height) {
+        rangeCanvas.width = canvas.width; rangeCanvas.height = canvas.height;
+    }
+    rangeCtx.clearRect(0,0, rangeCanvas.width, rangeCanvas.height);
+    
+    // Определяем цвет заливки в зависимости от темы
+    const isLight = document.body.classList.contains('theme-light');
+    // В светлой теме - черный, в темной - белый
+    rangeCtx.fillStyle = isLight ? "#000000" : "#ffffff";
+    
+    STATE.towers.forEach(t => {
+        const cx = (t.x + 0.5) * cs; const cy = (t.y + 0.5) * cs;
+        rangeCtx.beginPath(); rangeCtx.arc(cx, cy, t.stats.radius * cs, 0, Math.PI*2); rangeCtx.fill();
+    });
+
+    ctx.save();
+    
+    ctx.globalAlpha = 0.1; 
+    ctx.drawImage(rangeCanvas, 0, 0);
+    ctx.restore();
+
+    // Обводка зон (отдельно, чтобы была четкой)
     STATE.towers.forEach(t => {
         const cx = (t.x + 0.5) * cs; const cy = (t.y + 0.5) * cs;
         ctx.beginPath(); ctx.arc(cx, cy, t.stats.radius * cs, 0, Math.PI*2);
-        if (STATE.selectedTower === t) { ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.strokeStyle = "rgba(255,255,255,0.8)"; } 
-        else { ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.strokeStyle = "rgba(255,255,255,0.1)"; }
-        ctx.lineWidth = 1; ctx.fill(); ctx.stroke();
+        
+        if (STATE.selectedTower === t) { 
+            ctx.strokeStyle = isLight ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)"; 
+            ctx.lineWidth = 2;
+        } else {
+            // Слабая обводка для всех остальных
+            ctx.strokeStyle = isLight ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.15)"; 
+            ctx.lineWidth = 1;
+        }
+        ctx.stroke();
     });
 
+    // 4. Entities
     STATE.enemies.forEach(en => {
         const ex = (en.x + 0.5) * cs; const ey = (en.y + 0.5) * cs;
         ctx.fillStyle = (en.type === 'tank') ? PALETTE.tank : (en.type === 'shooter' ? PALETTE.shooter : PALETTE.normal);
@@ -797,14 +1077,13 @@ function draw() {
         if (!isNaN(hpPct)) drawCircularHP(ctx, ex, ey, r + 4, hpPct, (hpPct > 0.5 ? '#0f0' : '#f00'));
     });
 
-    // 1. Рисуем лазеры (снизу)
     STATE.projectiles.forEach(p => { if (p.source === 'tower') p.draw(ctx, cs); });
-    // 2. Рисуем снаряды врагов (сверху)
     STATE.projectiles.forEach(p => { if (p.source !== 'tower') p.draw(ctx, cs); });
     
     STATE.particles.forEach(p => p.draw(ctx, cs));
     STATE.towers.forEach(t => t.draw(ctx, cs));
 
+    // 5. Drag Preview
     if (STATE.hoverPos) {
         const {x, y} = STATE.hoverPos;
         if (STATE.grid[y]) {
@@ -817,11 +1096,52 @@ function draw() {
             }
         }
     }
+    
+    // 6. DRAW CONTEXT MENU (Mobile Friendly)
+    if (STATE.selectedTower) { // Убрана проверка !STATE.skillMode
+        const t = STATE.selectedTower;
+        const cx = (t.x + 0.5) * cs; 
+        const cy = (t.y + 0.5) * cs;
+        const btnOffset = cs * 0.8; 
+        const btnRadius = cs * 0.35;
+        
+        // --- Left Button (SELL) ---
+        ctx.beginPath();
+        ctx.arc(cx - btnOffset, cy, btnRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#e74c3c"; ctx.fill(); 
+        ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "white"; ctx.font = `bold ${cs*0.3}px Arial`; ctx.textAlign = "center"; ctx.textBaseline="middle";
+        ctx.fillText("$", cx - btnOffset, cy);
+        
+        // --- Right Button (UPGRADE) ---
+        ctx.beginPath();
+        ctx.arc(cx + btnOffset, cy, btnRadius, 0, Math.PI*2);
+        const canUpgrade = t.stats.tier < 3;
+        ctx.fillStyle = canUpgrade ? "#2ecc71" : "#95a5a6"; ctx.fill();
+        ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "white"; ctx.font = `bold ${cs*0.3}px Arial`;
+        ctx.fillText(canUpgrade ? "⬆" : "max", cx + btnOffset, cy);
+        
+        // Costs
+        ctx.font = `bold ${cs*0.2}px Arial`; 
+        ctx.fillStyle = "#fff"; ctx.strokeStyle="black"; ctx.lineWidth=2;
+        
+        const sellPrice = Math.floor(t.stats.cost * 0.7);
+        ctx.strokeText(`+${sellPrice}`, cx - btnOffset, cy + btnRadius + cs*0.2);
+        ctx.fillText(`+${sellPrice}`, cx - btnOffset, cy + btnRadius + cs*0.2);
+
+        if (canUpgrade) {
+             const nextKey = t.stats.baseType + (t.stats.tier + 1);
+             const nextCost = TOWERS_CONFIG[nextKey].cost - t.stats.cost;
+             ctx.fillStyle = (STATE.money >= nextCost) ? "#fff" : "#ff7979";
+             ctx.strokeText(`-${nextCost}`, cx + btnOffset, cy + btnRadius + cs*0.2);
+             ctx.fillText(`-${nextCost}`, cx + btnOffset, cy + btnRadius + cs*0.2);
+        }
+    }
 
     if (STATE.isPaused) { 
         ctx.fillStyle = "rgba(0,0,0,0.5)"; 
         ctx.fillRect(0,0,canvas.width, canvas.height); 
-        
         if (document.getElementById('monetization-toast').classList.contains('hidden')) {
             ctx.fillStyle = "white"; ctx.font = "bold 30px Arial"; ctx.textAlign="center"; 
             ctx.fillText("PAUSED", canvas.width/2, canvas.height/2); 
@@ -833,6 +1153,25 @@ function updateUI() {
     const elLives = document.getElementById('stat-lives'); if(elLives) elLives.innerText = STATE.lives;
     const elMoney = document.getElementById('stat-money'); if(elLives) elMoney.innerText = STATE.money;
     const elVp = document.getElementById('stat-vp'); if(elVp) elVp.innerText = STATE.victoryPoints;
+    
+    // Обновление множителя HP
+    const disp = document.getElementById('diff-val');
+    if(disp) disp.innerText = 'x' + STATE.diffMultiplier;
+    
+    // Update Skills UI
+    const btnAir = document.getElementById('skill-airstrike');
+    const btnFreeze = document.getElementById('skill-freeze');
+    if (btnAir) {
+        btnAir.querySelector('.skill-count').innerText = STATE.skills.airstrike;
+        if (STATE.skills.airstrike === 0) btnAir.disabled = true;
+        if (STATE.skillMode === 'airstrike') btnAir.classList.add('active-skill'); else btnAir.classList.remove('active-skill');
+    }
+    if (btnFreeze) {
+        btnFreeze.querySelector('.skill-count').innerText = STATE.skills.freeze;
+        if (STATE.skills.freeze === 0) btnFreeze.disabled = true;
+        if (STATE.skillMode === 'freeze') btnFreeze.classList.add('active-skill'); else btnFreeze.classList.remove('active-skill');
+    }
+
     updateShopAffordability();
 }
 
@@ -850,7 +1189,7 @@ function updateShopAffordability() {
 function showToast(msg) {
     const t = document.getElementById('toast'); if(!t) return;
     
-    document.getElementById('toast-title').innerText = "Note"; 
+    document.getElementById('toast-title').innerText = ""; 
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) restartBtn.style.display='none'; 
     

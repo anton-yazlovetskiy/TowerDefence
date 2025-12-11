@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Maze Defence</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body class="theme-dark">
     <div class="game-wrapper">
@@ -35,10 +35,7 @@
                     </label>
                 </div>
                 <button id="btn-pause" class="btn-modern btn-icon">⏸</button>
-
-                
-
-                <button id="theme-toggle" class="btn-modern btn-icon">☀</button>
+                <button id="theme-toggle" class="btn-modern btn-icon">🌙</button>
             </div>
         </header>
 
@@ -52,12 +49,10 @@
             </div>
             
             <div id="monetization-toast" class="toast hidden monetization-overlay">
-                
                 <div class="monet-header">
                     <span class="stat-icon icon-heart">😢  ♥</span>
                     <span id="current-lives-display"></span>
                 </div>
-                
                 
                 <div id="monet-options-container" class="monet-options">
                     <a href="https://www.paypal.com/paypalme/yazAnton/1" target="_blank" class="btn-modern monet-btn" data-lives="25">
@@ -93,6 +88,20 @@
 
             <div class="shop-scroll-area">
                 <div class="shop-grid">
+                    
+                    <div class="skills-wrapper">
+                        <button id="skill-airstrike" class="skill-btn" data-skill="airstrike">
+                            <span class="skill-icon">✈️</span>
+                            <span class="skill-label">AIR</span>
+                            <span class="skill-count">2</span>
+                        </button>
+                        <button id="skill-freeze" class="skill-btn" data-skill="freeze">
+                            <span class="skill-icon">❄️</span>
+                            <span class="skill-label">ICE</span>
+                            <span class="skill-count">2</span>
+                        </button>
+                    </div>
+
                     <div class="tower-group">
                         <div class="group-label">PULEMET</div>
                         <div class="tower-card" draggable="true" data-type="radar1">
@@ -144,6 +153,20 @@
                             <div class="tower-preview" id="preview-slow3"></div><span class="tower-cost"></span>
                         </div>
                      </div>
+
+                     <div class="tower-group">
+                        <div class="group-label">REGEN</div>
+                        <div class="tower-card" draggable="true" data-type="regen1">
+                            <div class="tower-preview" id="preview-regen1"></div><span class="tower-cost"></span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="regen2">
+                            <div class="tower-preview" id="preview-regen2"></div><span class="tower-cost"></span>
+                        </div>
+                        <div class="tower-card" draggable="true" data-type="regen3">
+                            <div class="tower-preview" id="preview-regen3"></div><span class="tower-cost"></span>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </aside>

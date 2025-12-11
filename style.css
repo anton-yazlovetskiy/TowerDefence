@@ -118,6 +118,35 @@ canvas {
 .money-value { font-size: 20px; font-weight: 800; color: #2ecc71; font-family: monospace; }
 .shop-scroll-area { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px; }
 .shop-grid { display: flex; flex-direction: column; gap: 10px; }
+
+/* SKILLS */
+.skills-wrapper {
+    display: flex; gap: 8px; justify-content: center;
+    padding-bottom: 5px; border-bottom: 1px dashed rgba(255,255,255,0.1);
+}
+.skill-btn {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--accent-color);
+    border-radius: 6px; padding: 6px; cursor: pointer; color: var(--text-color);
+    transition: all 0.2s; min-height: 50px;
+    position: relative; overflow: hidden;
+}
+.skill-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.2); transform: translateY(-1px); }
+.skill-btn:active:not(:disabled) { transform: scale(0.95); }
+.skill-btn:disabled { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: transparent; }
+.skill-btn.active-skill {
+    background: var(--accent-color); color: white;
+    box-shadow: 0 0 10px var(--accent-color);
+}
+.skill-icon { font-size: 18px; margin-bottom: 2px; }
+.skill-label { font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.skill-count {
+    position: absolute; top: 2px; right: 2px;
+    background: rgba(0,0,0,0.6); color: white;
+    font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: bold;
+}
+
 .tower-group {
     background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px;
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border: var(--ui-border);
@@ -204,135 +233,50 @@ canvas {
 }
 #start-btn-container.tutorial-highlight { padding: 4px; margin: -4px; }
 
-/* === MONETIZATION STYLES (Dynamic Height) === */
-
+/* === MONETIZATION STYLES === */
 .monetization-overlay {
-    position: fixed; 
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2000; 
-    width: 300px; 
-    max-width: 90%;
-    
-    /* Уменьшенное вертикальное заполнение для компактности */
-    padding: 80px 25px; 
-    
-    background: var(--panel-bg);
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 2000; width: 300px; max-width: 90%;
+    padding: 80px 25px; background: var(--panel-bg);
     border: 2px solid var(--accent-color); 
-    box-shadow: 0 0 50px rgba(139, 92, 246, 0.4);
-    text-align: center;
+    box-shadow: 0 0 50px rgba(139, 92, 246, 0.4); text-align: center;
 }
-
-/* NEW: Класс, который схлопывает блок с кнопками */
 .hidden-on-paid {
-    /* Эти свойства схлопнут контейнер плавно */
-    max-height: 0 !important; 
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    opacity: 0 !important; 
-    pointer-events: none; 
-    overflow: hidden;
+    max-height: 0 !important; margin-top: 0 !important; margin-bottom: 0 !important;
+    padding-top: 0 !important; padding-bottom: 0 !important;
+    opacity: 0 !important; pointer-events: none; overflow: hidden;
 }
-
-/* Monetization Header - Heart + Lives */
 .monet-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--text-color);
-    margin-bottom: 5px;
-    gap: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 800; color: var(--text-color);
+    margin-bottom: 5px; gap: 10px;
 }
-.monet-header .icon-heart { 
-    color: #f43f5e; 
-    font-size: 32px;
-}
-.monet-header span {
-    color: #f43f5e;
-}
+.monet-header .icon-heart { color: #f43f5e; font-size: 32px; }
+.monet-header span { color: #f43f5e; }
 
-/* Payment Options Container */
 .monet-options {
-    display: flex;
-    justify-content: center; 
-    gap: 10px; 
-    margin-top: 15px;
-    margin-bottom: 10px; /* Отступ перед сообщением/кнопкой Continue */
-
-    /* НОВЫЙ СТИЛЬ: для плавного схлопывания */
+    display: flex; justify-content: center; gap: 10px; 
+    margin-top: 15px; margin-bottom: 10px;
     transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out; 
-    max-height: 150px; /* Достаточная высота для отображения кнопок */
-    overflow: hidden;
+    max-height: 150px; overflow: hidden;
 }
 
-/* Square Coffee Button Style */
 .monet-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    width: 70px; 
-    height: 70px; 
-    padding: 6px !important; 
-    
-    background: var(--wall-color) !important; 
-    color: var(--text-color) !important;
-    text-decoration: none;
-    font-weight: 600;
-    border: 1px solid var(--accent-color);
-    box-shadow: none !important;
-    transition: background 0.2s, transform 0.1s;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    width: 70px; height: 70px; padding: 6px !important; 
+    background: var(--wall-color) !important; color: var(--text-color) !important;
+    text-decoration: none; font-weight: 600; border: 1px solid var(--accent-color);
+    box-shadow: none !important; transition: background 0.2s, transform 0.1s;
 }
-
 .monet-btn:hover { background: rgba(139, 92, 246, 0.2) !important; }
 
-/* Icon (Coffee or Price) */
-.coffee-icon {
-    font-size: 20px; 
-    color: #f4f4f5; 
-    margin-bottom: 2px;
-    font-family: Arial, sans-serif;
-    font-weight: bold;
-}
-.coffee-label {
-    font-size: 9px; 
-    color: #aaa;
-    margin-top: -4px;
-}
+.coffee-icon { font-size: 20px; color: #f4f4f5; margin-bottom: 2px; font-weight: bold; }
+.coffee-label { font-size: 9px; color: #aaa; margin-top: -4px; }
+.monet-reward { font-size: 10px; font-weight: 700; color: #2ecc71; }
 
-/* Reward text */
-.monet-reward {
-    font-size: 10px; 
-    font-weight: 700;
-    color: #2ecc71;
-}
-
-/* Style for Continue button after payment/cancellation */
 #btn-monet-continue {
-    margin-top: 10px; /* Скорректировано */
-    background: var(--accent-color) !important;
-    color: white !important;
-    font-weight: bold;
-    padding: 8px 25px;
-}
-
-/* MOBILE LAYOUT ADJUSTMENTS for MODAL */
-@media (max-width: 768px) {
-    .monetization-overlay {
-        width: 95%; 
-    }
-    .monet-options {
-        gap: 8px;
-    }
-    .monet-btn {
-        width: 65px;
-        height: 65px;
-    }
+    margin-top: 10px; background: var(--accent-color) !important;
+    color: white !important; font-weight: bold; padding: 8px 25px;
 }
 
 /* =========================================
@@ -368,6 +312,11 @@ canvas {
         display: grid; grid-template-columns: 1fr 1fr; 
         gap: 6px; width: 100%;
     }
+    
+    .skills-wrapper {
+        grid-column: span 2; /* Full width active skills */
+    }
+
     .tower-group { 
         display: flex; justify-content: space-evenly; align-items: center;
         gap: 2px; padding: 6px; height: auto; 
@@ -378,4 +327,8 @@ canvas {
     .tower-preview { width: 100%; height: 100%; }
     .tower-preview canvas { width: 36px; height: 36px; } 
     .tower-cost { font-size: 8px; padding: 1px 3px; }
+    
+    .monetization-overlay { width: 95%; }
+    .monet-options { gap: 8px; }
+    .monet-btn { width: 65px; height: 65px; }
 }
