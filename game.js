@@ -606,9 +606,13 @@ class InputHandler {
     }
 
     changeDiff(delta) {
+        // Math.max(1, ...) гарантирует, что множитель не уйдет ниже x1
         STATE.diffMultiplier = Math.max(1, STATE.diffMultiplier + delta);
         const disp = document.getElementById('diff-val');
         if(disp) disp.innerText = 'x' + STATE.diffMultiplier;
+        
+        // Дополнительный вызов updateUI, чтобы обновить кнопки (если они были отключены/включены)
+        updateUI(); 
     }
 
     toggleGridSize() {
@@ -890,16 +894,25 @@ function generateShopIcons() {
     });
 }
 
+// game.js
+
 function updateMapControlsState() {
     const btnGrid = document.getElementById('btn-grid-size');
-    const btnMinus = document.getElementById('diff-minus');
-    const btnPlus = document.getElementById('diff-plus');
+    // Кнопки diff-minus и diff-plus больше не отключаются здесь.
 
     const disabled = STATE.isWaveActive;
 
+    // Кнопка изменения размера карты отключается только во время волны
     if (btnGrid) btnGrid.disabled = disabled;
-    if (btnMinus) btnMinus.disabled = disabled;
-    if (btnPlus) btnPlus.disabled = disabled;
+    
+    // Дополнительно: обновим состояние кнопок навыков, которые тоже должны быть доступны только во время волны
+    const btnAir = document.getElementById('skill-airstrike');
+    const btnFreeze = document.getElementById('skill-freeze');
+    if (btnAir) btnAir.disabled = STATE.skills.airstrike === 0 || !STATE.isWaveActive;
+    if (btnFreeze) btnFreeze.disabled = STATE.skills.freeze === 0 || !STATE.isWaveActive;
+    
+    // Note: updateUI() также обновит состояние кнопок навыков (если они есть)
+    updateUI();
 }
 
 

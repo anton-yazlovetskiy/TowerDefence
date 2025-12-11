@@ -258,6 +258,23 @@ canvas {
     color: white !important; font-weight: bold; padding: 8px 25px;
 }
 
+/* Добавьте это в style.css в секцию для ПК (до @media), 
+   чтобы новые контейнеры выстраивали элементы в ряд */
+
+.settings-row,
+.actions-row {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Отступ между элементами внутри групп */
+}
+
+/* Убедимся, что обертка действий тоже flex (на всякий случай) */
+.actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 /* =========================================
    MOBILE LAYOUT
    ========================================= */
