@@ -513,7 +513,7 @@ class InputHandler {
         
         // IMMEDIATE ACTION: AIRSTRIKE (Global Damage)
         if(btnAir) btnAir.addEventListener('click', () => {
-            if (STATE.skills.airstrike > 0) {
+            if (STATE.isWaveActive && STATE.skills.airstrike > 0) {
                 STATE.skills.airstrike--;
                 
                 // Наносим урон ВСЕМ врагам на карте
@@ -532,6 +532,8 @@ class InputHandler {
                 const cvs = document.getElementById('gameCanvas');
                 cvs.style.transform = "translate(2px, 2px)";
                 setTimeout(() => cvs.style.transform = "none", 50);
+            } else if (!STATE.isWaveActive) {
+                showToast("Start the wave first!");
             } else {
                 showToast("No Airstrikes left!");
             }
@@ -539,7 +541,7 @@ class InputHandler {
 
         // IMMEDIATE ACTION: FREEZE (Global Stun)
         if(btnFreeze) btnFreeze.addEventListener('click', () => {
-            if (STATE.skills.freeze > 0) {
+            if (STATE.isWaveActive && STATE.skills.freeze > 0) {
                 STATE.skills.freeze--;
                 
                 // Замораживаем ВСЕХ врагов
@@ -549,6 +551,8 @@ class InputHandler {
                 
                 showToast("GLOBAL FREEZE! (5s)");
                 updateUI();
+            } else if (!STATE.isWaveActive) {
+                showToast("Start the wave first!");
             } else {
                 showToast("No Freeze charges left!");
             }
@@ -1158,18 +1162,17 @@ function updateUI() {
     const disp = document.getElementById('diff-val');
     if(disp) disp.innerText = 'x' + STATE.diffMultiplier;
     
-    // Update Skills UI
+    // Update Skills UI (NEW LOCATION)
     const btnAir = document.getElementById('skill-airstrike');
     const btnFreeze = document.getElementById('skill-freeze');
+    
     if (btnAir) {
         btnAir.querySelector('.skill-count').innerText = STATE.skills.airstrike;
-        if (STATE.skills.airstrike === 0) btnAir.disabled = true;
-        if (STATE.skillMode === 'airstrike') btnAir.classList.add('active-skill'); else btnAir.classList.remove('active-skill');
+        btnAir.disabled = STATE.skills.airstrike === 0 || !STATE.isWaveActive;
     }
     if (btnFreeze) {
         btnFreeze.querySelector('.skill-count').innerText = STATE.skills.freeze;
-        if (STATE.skills.freeze === 0) btnFreeze.disabled = true;
-        if (STATE.skillMode === 'freeze') btnFreeze.classList.add('active-skill'); else btnFreeze.classList.remove('active-skill');
+        btnFreeze.disabled = STATE.skills.freeze === 0 || !STATE.isWaveActive;
     }
 
     updateShopAffordability();
@@ -1255,6 +1258,9 @@ class Tutorial {
         this.overlay.classList.add('hidden'); 
         this.msgBox.classList.add('hidden'); 
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight')); 
+        
+        // NEW FIX: Убеждаемся, что оверлей монетизации и пауза сняты
+        unpauseGame(); // Снимет STATE.isPaused = true и скроет Monetization Toast
         
         localStorage.setItem('skipTutorial', 'true');
         
